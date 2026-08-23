@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Sidebar, MobileSidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useUIStore } from '../../stores/uiStore';
+import { usePageStore } from '../../stores/pageStore';
+import { useRouter } from 'next/navigation';
 import type { Page } from '../../types/page';
 
 interface AppShellProps {
@@ -11,11 +12,14 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const router = useRouter();
   const { isMobileSidebarOpen, setMobileSidebarOpen } = useUIStore();
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const { selectedPageId, selectPage } = usePageStore();
 
   const handlePageSelect = (page: Page) => {
-    setSelectedPageId(page.id);
+    selectPage(page.id);
+    setMobileSidebarOpen(false);
+    router.push(`/page/${page.id}`);
   };
 
   return (

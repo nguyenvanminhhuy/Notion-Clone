@@ -872,3 +872,617 @@ a {
     display: none;
   }
 }
+
+/* Phase 2 Interactive States */
+.hover-bg-hover:hover {
+  background-color: var(--color-bg-hover) !important;
+}
+
+.hover-bg-accent-hover:hover {
+  background-color: var(--color-accent-hover) !important;
+}
+
+.context-menu-item:hover {
+  background-color: var(--color-bg-hover) !important;
+}
+
+.context-menu-item.item-danger:hover {
+  background-color: var(--color-danger-subtle) !important;
+}
+
+.page-cover-wrapper .hover-add-cover {
+  opacity: 0 !important;
+  transition: opacity var(--transition-fast);
+}
+
+.page-cover-wrapper:hover .hover-add-cover {
+  opacity: 0.8 !important;
+}
+
+.page-cover-wrapper:hover .hover-add-cover:hover {
+  opacity: 1 !important;
+}
+
+.page-title-input::placeholder {
+  color: var(--color-text-placeholder);
+  opacity: 0.5;
+}
+
+.page-tree-drag-handle {
+  transition: opacity var(--transition-fast);
+}
+
+.page-tree-drag-handle.invisible {
+  opacity: 0;
+}
+
+.page-tree-drag-handle.visible {
+  opacity: 0.5;
+}
+
+.page-tree-drag-handle:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   10. PAGE VIEW LAYOUT (Phase 3)
+   ============================================================ */
+.page-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-bg);
+  overflow: hidden;
+}
+
+.page-view-loading,
+.page-view-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.page-view-not-found h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.btn-secondary {
+  padding: 6px 14px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-hover);
+}
+
+/* Page toolbar */
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.page-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-toolbar-date {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.page-toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.page-toolbar-btn:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.page-toolbar-btn-label {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .page-toolbar-btn-label {
+    display: inline;
+  }
+}
+
+.page-toolbar-ai {
+  color: var(--color-accent);
+}
+
+.page-toolbar-ai:hover {
+  background-color: var(--color-accent-subtle);
+  color: var(--color-accent-hover);
+}
+
+.active-favorite {
+  color: var(--color-warning) !important;
+}
+
+/* Page content scroll area */
+.page-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Editor wrapper */
+.page-editor-wrapper {
+  max-width: 724px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 54px 120px;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .page-editor-wrapper {
+    padding: 0 20px 80px;
+  }
+}
+
+/* ============================================================
+   11. TIPTAP / PROSEMIRROR EDITOR STYLES (Phase 3)
+   ============================================================ */
+.editor-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.editor-scroll-area {
+  position: relative;
+}
+
+.editor-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 0;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+}
+
+/* ── ProseMirror base ──────────────────────────────────────── */
+.prose-editor {
+  outline: none;
+  min-height: 240px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--color-text-primary);
+  caret-color: var(--color-accent);
+}
+
+/* ── Placeholder ────────────────────────────────────────────── */
+.prose-editor p.is-editor-empty:first-child::before,
+.prose-editor .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-text-placeholder);
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* ── Paragraphs & spacing ───────────────────────────────────── */
+.prose-editor p {
+  margin: 0;
+  padding: 2px 0;
+}
+
+.prose-editor > * + * {
+  margin-top: 0.25em;
+}
+
+/* ── Headings ───────────────────────────────────────────────── */
+.prose-editor h1 {
+  font-size: 2em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin: 1em 0 0.25em;
+  color: var(--color-text-primary);
+}
+
+.prose-editor h2 {
+  font-size: 1.45em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin: 0.85em 0 0.2em;
+  color: var(--color-text-primary);
+}
+
+.prose-editor h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  margin: 0.75em 0 0.15em;
+  color: var(--color-text-primary);
+}
+
+/* ── Lists ──────────────────────────────────────────────────── */
+.prose-editor ul,
+.prose-editor ol {
+  padding-left: 1.5em;
+  margin: 0.25em 0;
+}
+
+.prose-editor li {
+  padding: 1px 0;
+}
+
+.prose-editor li > p {
+  margin: 0;
+}
+
+/* Task list */
+.prose-editor ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.25em;
+}
+
+.prose-editor ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.prose-editor ul[data-type='taskList'] li > label {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.prose-editor ul[data-type='taskList'] li > label input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.prose-editor ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: var(--color-text-tertiary);
+  text-decoration: line-through;
+}
+
+/* ── Blockquote ──────────────────────────────────────────────── */
+.prose-editor blockquote {
+  border-left: 3px solid var(--color-accent);
+  margin: 0.5em 0;
+  padding: 0.25em 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--color-accent-subtle);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.dark .prose-editor blockquote {
+  background-color: var(--color-bg-tertiary);
+}
+
+/* ── Horizontal rule ─────────────────────────────────────────── */
+.prose-editor hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5em 0;
+}
+
+/* ── Inline code ─────────────────────────────────────────────── */
+.prose-editor code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  color: var(--color-text-primary);
+}
+
+/* ── Code block ──────────────────────────────────────────────── */
+.prose-editor pre {
+  background-color: #1e1e2e;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin: 0.75em 0;
+  overflow-x: auto;
+}
+
+.dark .prose-editor pre {
+  background-color: #12121c;
+}
+
+.prose-editor pre code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #cdd6f4;
+}
+
+/* Lowlight syntax highlighting tokens */
+.hljs-comment,
+.hljs-quote { color: #6c7086; }
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attribute,
+.hljs-tag,
+.hljs-name,
+.hljs-regexp,
+.hljs-link,
+.hljs-selector-id,
+.hljs-selector-class { color: #f38ba8; }
+.hljs-number,
+.hljs-meta,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params { color: #fab387; }
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet { color: #a6e3a1; }
+.hljs-title,
+.hljs-section { color: #89b4fa; }
+.hljs-keyword,
+.hljs-selector-tag { color: #cba6f7; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
+
+/* ── Highlight mark ──────────────────────────────────────────── */
+.prose-editor mark {
+  background-color: #fef08a;
+  color: #1a1a1a;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.dark .prose-editor mark {
+  background-color: #713f12;
+  color: #fef3c7;
+}
+
+/* ── Links ───────────────────────────────────────────────────── */
+.prose-editor a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.prose-editor a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ── Images ──────────────────────────────────────────────────── */
+.prose-editor img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  margin: 0.5em 0;
+  display: block;
+}
+
+.prose-editor img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.prose-editor table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0.75em 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.prose-editor th {
+  background-color: var(--color-bg-secondary);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
+}
+
+.prose-editor th,
+.prose-editor td {
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+  vertical-align: top;
+  min-width: 80px;
+  position: relative;
+}
+
+.prose-editor td > *,
+.prose-editor th > * {
+  margin: 0;
+}
+
+/* Selected cell */
+.prose-editor .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-accent-subtle);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Text selection ──────────────────────────────────────────── */
+.prose-editor ::selection {
+  background-color: var(--color-accent-subtle);
+  color: var(--color-accent-subtle-text);
+}
+
+/* ── Focus styling ───────────────────────────────────────────── */
+.editor-content:focus-within {
+  outline: none;
+}
+
+/* ============================================================
+   12. BUBBLE MENU (Phase 3)
+   ============================================================ */
+.bubble-menu {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(8px);
+}
+
+.bubble-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.bubble-menu-btn:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.bubble-menu-btn.active {
+  background-color: var(--color-accent-subtle);
+  color: var(--color-accent);
+}
+
+.bubble-menu-divider {
+  width: 1px;
+  height: 18px;
+  background-color: var(--color-border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   13. SLASH COMMAND MENU (Phase 3)
+   ============================================================ */
+.slash-menu {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 4px;
+  min-width: 240px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.slash-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.slash-menu-item:hover,
+.slash-menu-item.selected {
+  background-color: var(--color-bg-hover);
+}
+
+.slash-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.slash-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.slash-menu-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.slash-menu-desc {
+  font-size: 11.5px;
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================================
+   14. ANIMATIONS
+   ============================================================ */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

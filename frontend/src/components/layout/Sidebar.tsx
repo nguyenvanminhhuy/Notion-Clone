@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { WorkspaceSwitcher } from '../../features/workspace/WorkspaceSwitcher';
-import { PageTreeItem } from '../../features/page/PageTreeItem';
+import { PageTree } from '../../features/page/PageTree';
 import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '../../config/navigation';
 import { useSidebarStore } from '../../stores/sidebarStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
-import { MOCK_PAGES, buildPageTree } from '../../mock/pages';
+import { usePageStore } from '../../stores/pageStore';
 import type { Page } from '../../types/page';
 
 interface SidebarProps {
@@ -20,9 +20,18 @@ interface SidebarProps {
 export function Sidebar({ selectedPageId, onPageSelect }: SidebarProps) {
   const { isOpen } = useSidebarStore();
   const { currentWorkspaceId } = useWorkspaceStore();
+  const { createPage } = usePageStore();
   const [activeNav, setActiveNav] = useState('home');
 
-  const rootPages = buildPageTree(MOCK_PAGES, currentWorkspaceId);
+  const handleAddPage = async () => {
+    if (currentWorkspaceId) {
+      try {
+        await createPage(currentWorkspaceId);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   return (
     <motion.aside
@@ -74,29 +83,20 @@ export function Sidebar({ selectedPageId, onPageSelect }: SidebarProps) {
         <div className="sidebar-section">
           <div className="sidebar-section-header">
             <span>Pages</span>
-            <button className="sidebar-section-add" aria-label="Add new page">
+            <button
+              className="sidebar-section-add"
+              aria-label="Add new page"
+              onClick={handleAddPage}
+            >
               <span>+</span>
             </button>
           </div>
 
-          {rootPages.length === 0 ? (
-            <div className="sidebar-empty">
-              <FileText size={16} />
-              <span>No pages yet</span>
-            </div>
-          ) : (
-            <div role="tree" aria-label="Page tree">
-              {rootPages.map((page) => (
-                <PageTreeItem
-                  key={page.id}
-                  page={page}
-                  depth={0}
-                  onSelect={onPageSelect}
-                  selectedPageId={selectedPageId}
-                />
-              ))}
-            </div>
-          )}
+          <PageTree
+            workspaceId={currentWorkspaceId}
+            selectedPageId={selectedPageId}
+            onPageSelect={onPageSelect}
+          />
         </div>
 
         <div className="sidebar-divider" role="separator" />
