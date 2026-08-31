@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider, themeScript } from '../src/components/shared/ThemeProvider';
 import { QueryProvider } from '../src/components/shared/QueryProvider';
 import { ToastContainer } from '../src/components/shared/Toast';
+import { CommandPalette } from '../src/components/shared/CommandPalette';
 
 export const metadata: Metadata = {
   title: 'Notion Clone — AI-Powered Knowledge Workspace',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             {children}
             <ToastContainer />
+            <CommandPalette />
           </ThemeProvider>
         </QueryProvider>
       </body>

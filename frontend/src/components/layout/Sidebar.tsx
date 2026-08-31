@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Star, Clock, Settings, Trash2 } from 'lucide-react';
 import { WorkspaceSwitcher } from '../../features/workspace/WorkspaceSwitcher';
 import { PageTree } from '../../features/page/PageTree';
-import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '../../config/navigation';
 import { useSidebarStore } from '../../stores/sidebarStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { usePageStore } from '../../stores/pageStore';
+import { useUIStore } from '../../stores/uiStore';
+import { TrashModal } from '../shared/TrashModal';
 import type { Page } from '../../types/page';
 
 interface SidebarProps {
@@ -18,15 +20,33 @@ interface SidebarProps {
 }
 
 export function Sidebar({ selectedPageId, onPageSelect }: SidebarProps) {
+  const router = useRouter();
   const { isOpen } = useSidebarStore();
   const { currentWorkspaceId } = useWorkspaceStore();
-  const { createPage } = usePageStore();
-  const [activeNav, setActiveNav] = useState('home');
+  const { pages, createPage } = usePageStore();
+  const { setSearchOpen } = useUIStore();
+  const [trashOpen, setTrashOpen] = useState(false);
+
+  // ── Derived lists ─────────────────────────────────────────────────────────
+  const favoritePages = useMemo(
+    () => pages.filter((p) => p.workspaceId === currentWorkspaceId && p.isFavorite && !p.isArchived),
+    [pages, currentWorkspaceId]
+  );
+
+  const recentPages = useMemo(
+    () =>
+      [...pages]
+        .filter((p) => p.workspaceId === currentWorkspaceId && !p.isArchived && p.lastOpenedAt)
+        .sort((a, b) => (b.lastOpenedAt ?? '').localeCompare(a.lastOpenedAt ?? ''))
+        .slice(0, 5),
+    [pages, currentWorkspaceId]
+  );
 
   const handleAddPage = async () => {
     if (currentWorkspaceId) {
       try {
-        await createPage(currentWorkspaceId);
+        const page = await createPage(currentWorkspaceId);
+        router.push(`/page/${page.id}`);
       } catch (err) {
         console.error(err);
       }
@@ -51,35 +71,71 @@ export function Sidebar({ selectedPageId, onPageSelect }: SidebarProps) {
         {/* Search */}
         <button
           className="sidebar-search-btn"
-          aria-label="Search pages"
+          aria-label="Search pages (Ctrl+K)"
+          onClick={() => setSearchOpen(true)}
         >
           <Search size={15} />
           <span>Search</span>
           <kbd className="sidebar-kbd">⌘K</kbd>
         </button>
 
-        {/* Primary nav */}
+        {/* Home */}
         <nav className="sidebar-nav" aria-label="Main navigation">
-          {PRIMARY_NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={`sidebar-nav-item ${activeNav === item.id ? 'active' : ''}`}
-                onClick={() => setActiveNav(item.id)}
-                aria-current={activeNav === item.id ? 'page' : undefined}
-              >
-                <Icon size={16} />
-                <span>{item.label}</span>
+          <Link href="/" className="sidebar-nav-item">
+            <Search size={16} style={{ opacity: 0 }} />
+            <span style={{ marginLeft: '-24px' }}>
+              <Link href="/" className="sidebar-nav-item" style={{ display: 'contents' }}>
+                Home
               </Link>
-            );
-          })}
+            </span>
+          </Link>
         </nav>
+
+        {/* Favorites */}
+        {favoritePages.length > 0 && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-header">
+              <Star size={13} style={{ opacity: 0.6 }} />
+              <span>Favorites</span>
+            </div>
+            {favoritePages.map((page) => (
+              <SidebarPageLink
+                key={page.id}
+                page={page}
+                isSelected={selectedPageId === page.id}
+                onClick={() => {
+                  onPageSelect?.(page);
+                  router.push(`/page/${page.id}`);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Recent */}
+        {recentPages.length > 0 && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-header">
+              <Clock size={13} style={{ opacity: 0.6 }} />
+              <span>Recent</span>
+            </div>
+            {recentPages.map((page) => (
+              <SidebarPageLink
+                key={page.id}
+                page={page}
+                isSelected={selectedPageId === page.id}
+                onClick={() => {
+                  onPageSelect?.(page);
+                  router.push(`/page/${page.id}`);
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="sidebar-divider" role="separator" />
 
-        {/* Pages section */}
+        {/* Pages tree */}
         <div className="sidebar-section">
           <div className="sidebar-section-header">
             <span>Pages</span>
@@ -91,7 +147,6 @@ export function Sidebar({ selectedPageId, onPageSelect }: SidebarProps) {
               <span>+</span>
             </button>
           </div>
-
           <PageTree
             workspaceId={currentWorkspaceId}
             selectedPageId={selectedPageId}
@@ -101,28 +156,55 @@ export function Sidebar({ selectedPageId, onPageSelect }: SidebarProps) {
 
         <div className="sidebar-divider" role="separator" />
 
-        {/* Secondary nav (Trash, Settings) */}
+        {/* Bottom nav */}
         <nav className="sidebar-nav sidebar-nav-secondary" aria-label="Secondary navigation">
-          {SECONDARY_NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className="sidebar-nav-item"
-              >
-                <Icon size={16} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          <button
+            className="sidebar-nav-item"
+            onClick={() => setTrashOpen(true)}
+            aria-label="Open Trash"
+          >
+            <Trash2 size={16} />
+            <span>Trash</span>
+          </button>
+          <Link href="/settings" className="sidebar-nav-item">
+            <Settings size={16} />
+            <span>Settings</span>
+          </Link>
         </nav>
       </div>
+
+      <TrashModal isOpen={trashOpen} onClose={() => setTrashOpen(false)} />
     </motion.aside>
   );
 }
 
-// Mobile sidebar (drawer)
+// ── Compact page link in Favorites / Recent lists ─────────────────────────────
+function SidebarPageLink({
+  page,
+  isSelected,
+  onClick,
+}: {
+  page: Page;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`sidebar-nav-item ${isSelected ? 'active' : ''}`}
+      onClick={onClick}
+      style={{ width: '100%', textAlign: 'left' }}
+    >
+      <span style={{ fontSize: '14px', width: '16px', textAlign: 'center' }}>
+        {page.icon || '📄'}
+      </span>
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {page.title || 'Untitled'}
+      </span>
+    </button>
+  );
+}
+
+// ── Mobile sidebar (drawer) ───────────────────────────────────────────────────
 interface MobileSidebarProps extends SidebarProps {
   isOpen: boolean;
   onClose: () => void;

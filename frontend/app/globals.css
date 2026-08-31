@@ -1486,3 +1486,457 @@ a {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* ============================================================
+   15. MODAL SHARED BASE (Phase 4)
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-panel {
+  width: 100%;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.modal-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.modal-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  width: 100%;
+}
+
+.modal-search-input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.modal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--color-text-tertiary);
+  font-size: 13px;
+}
+
+/* ============================================================
+   16. COMMAND PALETTE (Phase 4)
+   ============================================================ */
+.command-palette-panel {
+  max-width: 600px;
+  max-height: 72vh;
+}
+
+.command-palette-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.command-palette-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: var(--color-text-primary);
+  width: 100%;
+}
+
+.command-palette-input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.command-palette-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.command-palette-esc {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.command-palette-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.cp-section-header {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 10px 4px;
+}
+
+.cp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.cp-item:hover,
+.cp-item.selected {
+  background-color: var(--color-bg-hover);
+}
+
+.cp-page-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  font-size: 14px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.cp-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.cp-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-item-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cp-item-breadcrumb {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.cp-item-snippet {
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cp-item-hint {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.cp-no-results {
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+}
+
+.command-palette-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.command-palette-footer kbd {
+  display: inline-block;
+  padding: 1px 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-size: 10px;
+  background-color: var(--color-bg-secondary);
+  margin-right: 3px;
+}
+
+/* ============================================================
+   17. TRASH MODAL (Phase 4)
+   ============================================================ */
+.trash-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.trash-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.trash-item-icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.trash-item-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trash-item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.trash-item:hover .trash-item-actions {
+  opacity: 1;
+}
+
+.trash-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.trash-action-btn:hover {
+  background-color: var(--color-bg-active);
+  color: var(--color-text-primary);
+}
+
+.trash-action-btn.danger {
+  color: var(--color-danger);
+}
+
+.trash-action-btn.danger:hover {
+  background-color: var(--color-danger-subtle);
+}
+
+/* ============================================================
+   18. CONFIRM DIALOG (Phase 4)
+   ============================================================ */
+.confirm-dialog {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.confirm-dialog-body {
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-dialog-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-danger-subtle);
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.confirm-dialog-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+}
+
+.confirm-dialog-message {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ============================================================
+   19. BUTTON VARIANTS (Phase 4)
+   ============================================================ */
+.btn-secondary {
+  padding: 6px 14px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.btn-danger {
+  padding: 6px 14px;
+  background-color: var(--color-danger);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #ffffff;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-danger:hover {
+  opacity: 0.88;
+}
+
+/* ============================================================
+   20. SIDEBAR FAVORITES / RECENT SECTIONS (Phase 4)
+   ============================================================ */
+.sidebar-section {
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.sidebar-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  user-select: none;
+}
+
+.sidebar-section-add {
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-section-add:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
