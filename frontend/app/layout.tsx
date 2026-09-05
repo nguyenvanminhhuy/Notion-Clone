@@ -4,6 +4,8 @@ import { ThemeProvider, themeScript } from '../src/components/shared/ThemeProvid
 import { QueryProvider } from '../src/components/shared/QueryProvider';
 import { ToastContainer } from '../src/components/shared/Toast';
 import { CommandPalette } from '../src/components/shared/CommandPalette';
+import { UploadDialog } from '../src/components/shared/UploadDialog';
+import { ShareDialog } from '../src/features/sharing/ShareDialog';
 
 export const metadata: Metadata = {
   title: 'Notion Clone — AI-Powered Knowledge Workspace',
@@ -26,6 +28,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
             <ToastContainer />
             <CommandPalette />
+            <UploadDialog />
+            <ShareDialog />
           </ThemeProvider>
         </QueryProvider>
       </body>

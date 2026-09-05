@@ -3,11 +3,16 @@
 import { Search, Bell, Moon, Sun, Monitor, PanelLeft } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { useSidebarStore } from '../../stores/sidebarStore';
+import { useNotificationStore } from '../../stores/notificationStore';
 import { MOCK_CURRENT_USER } from '../../mock/users';
+import { NotificationCenter } from '../../features/notifications/NotificationCenter';
 
 export function TopBar() {
-  const { theme, setTheme, toggleMobileSidebar } = useUIStore();
+  const { theme, setTheme, toggleMobileSidebar, isNotificationsOpen, setNotificationsOpen } = useUIStore();
   const { toggleSidebar, isOpen } = useSidebarStore();
+  const { getUnreadCount } = useNotificationStore();
+  
+  const unreadCount = getUnreadCount();
 
   const cycleTheme = () => {
     if (theme === 'light') setTheme('dark');
@@ -70,12 +75,19 @@ export function TopBar() {
           <ThemeIcon size={18} />
         </button>
 
-        <button className="topbar-icon-btn relative" aria-label="Notifications">
+        <button 
+          className={`topbar-icon-btn notification-bell-btn ${isNotificationsOpen ? 'active' : ''}`}
+          onClick={() => setNotificationsOpen(!isNotificationsOpen)}
+          aria-label="Notifications"
+        >
           <Bell size={18} />
-          <span className="notification-badge" aria-label="3 unread notifications">
-            3
-          </span>
+          {unreadCount > 0 && (
+            <span className="notification-badge" aria-label={`${unreadCount} unread notifications`}>
+              {unreadCount}
+            </span>
+          )}
         </button>
+        <NotificationCenter />
 
         <button className="topbar-avatar" aria-label="User menu">
           {initials}

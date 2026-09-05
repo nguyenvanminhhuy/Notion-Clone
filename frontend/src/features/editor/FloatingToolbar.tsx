@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useUIStore } from '../../stores/uiStore';
 import { type Editor } from '@tiptap/react';
 import {
   Pilcrow,
@@ -124,10 +125,9 @@ const SLASH_COMMANDS: SlashCommand[] = [
     icon: <ImageIcon size={16} />,
     keywords: ['image', 'img', 'photo', 'picture'],
     action: (editor) => {
-      const url = window.prompt('Image URL:');
-      if (url) {
+      useUIStore.getState().openUploadDialog((url: string) => {
         editor.chain().focus().setImage({ src: url }).run();
-      }
+      });
     },
   },
 ];

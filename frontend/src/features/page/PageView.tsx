@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { usePageStore } from '../../stores/pageStore';
+import { useUIStore } from '../../stores/uiStore';
 import { PageHeader } from './PageHeader';
 import { EditorSaveStatus } from '../editor/EditorSaveStatus';
+import { CommentList } from '../comments/CommentList';
 import {
   Star,
   Share2,
@@ -28,6 +30,7 @@ interface PageViewProps {
 
 export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
   const { pages, updatePage, toggleFavorite, selectPage } = usePageStore();
+  const { isCommentsOpen, toggleComments, setShareOpen } = useUIStore();
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -107,9 +110,11 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
 
   // ── Page view ──────────────────────────────────────────────────────────────
   return (
-    <div className="page-view-container">
-      {/* ── Toolbar ──────────────────────────────────────────────────────── */}
-      <div className="page-toolbar">
+    <div className="page-view-container" style={{ display: 'flex', width: '100%', height: '100%' }}>
+      {/* ── Main content area ────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
+        {/* ── Toolbar ──────────────────────────────────────────────────────── */}
+        <div className="page-toolbar">
         {/* Left: back + save status */}
         <div className="page-toolbar-left">
           {onBackToDashboard && (
@@ -138,12 +143,21 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
             />
           </button>
 
-          <button className="page-toolbar-btn" aria-label="Share page">
+          <button 
+            className="page-toolbar-btn" 
+            aria-label="Share page"
+            onClick={() => setShareOpen(true)}
+          >
             <Share2 size={16} />
             <span className="page-toolbar-btn-label">Share</span>
           </button>
 
-          <button className="page-toolbar-btn" aria-label="Comments">
+          <button 
+            className={`page-toolbar-btn ${isCommentsOpen ? 'active' : ''}`} 
+            aria-label="Comments"
+            onClick={toggleComments}
+            style={isCommentsOpen ? { color: 'var(--color-accent)' } : {}}
+          >
             <MessageSquare size={16} />
             <span className="page-toolbar-btn-label">Comments</span>
           </button>
@@ -183,6 +197,12 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
           </Suspense>
         </div>
       </div>
+    </div>
+
+      {/* ── Comments Sidebar ─────────────────────────────────────────────── */}
+      {isCommentsOpen && (
+        <CommentList pageId={currentPage.id} />
+      )}
     </div>
   );
 }

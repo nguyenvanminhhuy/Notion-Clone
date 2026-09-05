@@ -14,9 +14,10 @@ function delay(ms = 100): Promise<void> {
 function extractText(jsonStr: string): string {
   if (!jsonStr) return '';
   try {
-    const recurse = (n: { text?: string; content?: unknown[] }): string => {
-      if (n.text) return n.text;
-      if (n.content && Array.isArray(n.content)) return n.content.map(recurse).join(' ');
+    const recurse = (n: any): string => {
+      if (!n || typeof n !== 'object') return '';
+      if (n.text) return String(n.text);
+      if (n.content && Array.isArray(n.content)) return n.content.map((child: any) => recurse(child)).join(' ');
       return '';
     };
     return recurse(JSON.parse(jsonStr));

@@ -9,12 +9,23 @@ interface UIStore {
   isSearchOpen: boolean;
   isCommandPaletteOpen: boolean;
   isAIPanelOpen: boolean;
+  isUploadOpen: boolean;
+  isCommentsOpen: boolean;
+  isShareOpen: boolean;
+  isNotificationsOpen: boolean;
+  uploadCallback: ((url: string) => void) | null;
   setTheme: (theme: Theme) => void;
   setMobileSidebarOpen: (open: boolean) => void;
   toggleMobileSidebar: () => void;
   setSearchOpen: (open: boolean) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setAIPanelOpen: (open: boolean) => void;
+  openUploadDialog: (callback: (url: string) => void) => void;
+  closeUploadDialog: () => void;
+  setCommentsOpen: (open: boolean) => void;
+  toggleComments: () => void;
+  setShareOpen: (open: boolean) => void;
+  setNotificationsOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -25,6 +36,11 @@ export const useUIStore = create<UIStore>()(
       isSearchOpen: false,
       isCommandPaletteOpen: false,
       isAIPanelOpen: false,
+      isUploadOpen: false,
+      isCommentsOpen: false,
+      isShareOpen: false,
+      isNotificationsOpen: false,
+      uploadCallback: null,
 
       setTheme: (theme: Theme) => set({ theme }),
 
@@ -38,6 +54,18 @@ export const useUIStore = create<UIStore>()(
       setCommandPaletteOpen: (open: boolean) => set({ isCommandPaletteOpen: open }),
 
       setAIPanelOpen: (open: boolean) => set({ isAIPanelOpen: open }),
+
+      openUploadDialog: (callback) => set({ isUploadOpen: true, uploadCallback: callback }),
+
+      closeUploadDialog: () => set({ isUploadOpen: false, uploadCallback: null }),
+      
+      setCommentsOpen: (open: boolean) => set({ isCommentsOpen: open }),
+      
+      toggleComments: () => set((state) => ({ isCommentsOpen: !state.isCommentsOpen })),
+      
+      setShareOpen: (open: boolean) => set({ isShareOpen: open }),
+
+      setNotificationsOpen: (open: boolean) => set({ isNotificationsOpen: open }),
     }),
     {
       name: 'ui-store',
