@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useUIStore } from '../../stores/uiStore';
+import { useAIStore } from '../../stores/aiStore';
 import { type Editor } from '@tiptap/react';
 import {
   Pilcrow,
@@ -16,6 +17,7 @@ import {
   Minus,
   Table as TableIcon,
   Image as ImageIcon,
+  Sparkles,
   Plus,
 } from 'lucide-react';
 
@@ -128,6 +130,20 @@ const SLASH_COMMANDS: SlashCommand[] = [
       useUIStore.getState().openUploadDialog((url: string) => {
         editor.chain().focus().setImage({ src: url }).run();
       });
+    },
+  },
+  {
+    id: 'ai',
+    label: 'Ask AI',
+    description: 'Generate or transform content with AI',
+    icon: <Sparkles size={16} className="slash-ai-icon" />,
+    keywords: ['ai', 'generate', 'write', 'summarize', 'rewrite', 'assistant'],
+    action: (editor) => {
+      // Get selected or surrounding text for AI context
+      const { state } = editor;
+      const { from, to } = state.selection;
+      const selectedText = from !== to ? state.doc.textBetween(from, to, ' ') : '';
+      useAIStore.getState().openPanel(selectedText || undefined);
     },
   },
 ];

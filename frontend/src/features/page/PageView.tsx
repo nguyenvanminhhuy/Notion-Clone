@@ -3,9 +3,11 @@
 import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { usePageStore } from '../../stores/pageStore';
 import { useUIStore } from '../../stores/uiStore';
+import { useAIStore } from '../../stores/aiStore';
 import { PageHeader } from './PageHeader';
 import { EditorSaveStatus } from '../editor/EditorSaveStatus';
 import { CommentList } from '../comments/CommentList';
+import { AIAssistantPanel } from '../ai/AIAssistantPanel';
 import {
   Star,
   Share2,
@@ -31,6 +33,7 @@ interface PageViewProps {
 export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
   const { pages, updatePage, toggleFavorite, selectPage } = usePageStore();
   const { isCommentsOpen, toggleComments, setShareOpen } = useUIStore();
+  const { isPanelOpen: isAIPanelOpen, togglePanel: toggleAIPanel } = useAIStore();
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -162,7 +165,12 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
             <span className="page-toolbar-btn-label">Comments</span>
           </button>
 
-          <button className="page-toolbar-btn page-toolbar-ai" aria-label="Ask AI">
+          <button
+            className={`page-toolbar-btn page-toolbar-ai ${isAIPanelOpen ? 'active' : ''}`}
+            aria-label="Ask AI"
+            onClick={toggleAIPanel}
+            style={isAIPanelOpen ? { color: 'var(--color-accent)' } : {}}
+          >
             <Sparkles size={16} />
             <span className="page-toolbar-btn-label">AI</span>
           </button>
@@ -203,6 +211,9 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
       {isCommentsOpen && (
         <CommentList pageId={currentPage.id} />
       )}
+
+      {/* ── AI Assistant Panel ───────────────────────────────────────────── */}
+      <AIAssistantPanel pageTitle={currentPage.title} pageContentText={currentPage.content} />
     </div>
   );
 }

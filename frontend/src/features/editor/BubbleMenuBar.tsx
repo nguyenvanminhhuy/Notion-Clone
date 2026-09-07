@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { type Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import {
@@ -15,7 +15,9 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Sparkles,
 } from 'lucide-react';
+import { AISelectionMenu } from '../ai/AISelectionMenu';
 
 interface BubbleMenuBarProps {
   editor: Editor;
@@ -26,6 +28,26 @@ type ActiveFormat = {
 };
 
 export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
+  const [showAIMenu, setShowAIMenu] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+  const aiButtonRef = useRef<HTMLButtonElement>(null);
+  const aiMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close AI menu on outside click
+  useEffect(() => {
+    if (!showAIMenu) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        !aiButtonRef.current?.contains(e.target as Node) &&
+        !aiMenuRef.current?.contains(e.target as Node)
+      ) {
+        setShowAIMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showAIMenu]);
+
   const formatButtons: Array<{
     label: string;
     icon: React.ReactNode;
@@ -124,7 +146,7 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
         return from !== to && !ed.isActive('image') && !ed.isActive('codeBlock');
       }}
     >
-      <div className="bubble-menu">
+      <div className="bubble-menu" style={{ position: 'relative' }}>
         {/* Heading type group */}
         {headingButtons.map((btn) => (
           <button
@@ -164,6 +186,42 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
         >
           <LinkIcon size={14} />
         </button>
+
+        <div className="bubble-menu-divider" />
+
+        {/* AI Actions */}
+        <button
+          ref={aiButtonRef}
+          className={`bubble-menu-btn ai-bubble-btn ${showAIMenu ? 'active' : ''}`}
+          title="Ask AI"
+          aria-label="AI actions for selected text"
+          onClick={() => {
+            const { from, to } = editor.state.selection;
+            const text = editor.state.doc.textBetween(from, to, ' ');
+            setSelectedText(text);
+            setShowAIMenu((v) => !v);
+          }}
+        >
+          <Sparkles size={14} />
+        </button>
+
+        {/* AI Selection popover — rendered below bubble menu */}
+        {showAIMenu && (
+          <div
+            ref={aiMenuRef}
+            style={{
+              position: 'absolute',
+              top: '110%',
+              right: 0,
+              zIndex: 300,
+            }}
+          >
+            <AISelectionMenu
+              selectedText={selectedText}
+              onClose={() => setShowAIMenu(false)}
+            />
+          </div>
+        )}
       </div>
     </BubbleMenu>
   );
