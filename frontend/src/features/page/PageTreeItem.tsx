@@ -15,7 +15,7 @@ interface PageTreeItemProps {
   selectedPageId?: string | null;
 }
 
-export function PageTreeItem({
+function PageTreeItemComponent({
   page,
   depth = 0,
   onSelect,
@@ -248,3 +248,5 @@ export function PageTreeItem({
     </div>
   );
 }
+
+export const PageTreeItem = React.memo(PageTreeItemComponent);
