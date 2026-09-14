@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Notion Clone' }],
 };
 
+import { SkipToContent } from '../src/components/shared/SkipToContent';
+import { ErrorBoundary } from '../src/components/shared/ErrorBoundary';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -23,15 +26,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
-        <QueryProvider>
-          <ThemeProvider>
-            {children}
-            <ToastContainer />
-            <CommandPalette />
-            <UploadDialog />
-            <ShareDialog />
-          </ThemeProvider>
-        </QueryProvider>
+        <SkipToContent />
+        <ErrorBoundary>
+          <QueryProvider>
+            <ThemeProvider>
+              {children}
+              <ToastContainer />
+              <CommandPalette />
+              <UploadDialog />
+              <ShareDialog />
+            </ThemeProvider>
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

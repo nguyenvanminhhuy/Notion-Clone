@@ -7,6 +7,8 @@ import { usePageStore } from '../../stores/pageStore';
 import { useRouter } from 'next/navigation';
 import type { Page } from '../../types/page';
 
+import { ToastContainer } from '../shared/Toast';
+
 interface AppShellProps {
   children: React.ReactNode;
 }
@@ -24,8 +26,11 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="app-shell">
+      {/* Toast notifications */}
+      <ToastContainer />
+
       {/* Desktop sidebar */}
-      <div className="sidebar-wrapper hidden md:flex">
+      <div className="sidebar-wrapper desktop-sidebar-only">
         <Sidebar
           selectedPageId={selectedPageId}
           onPageSelect={handlePageSelect}

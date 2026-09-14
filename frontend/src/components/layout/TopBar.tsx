@@ -63,8 +63,8 @@ export function TopBar() {
           onClick={() => useUIStore.getState().setSearchOpen(true)}
         >
           <Search size={15} />
-          <span>Search</span>
-          <kbd className="topbar-kbd">⌘K</kbd>
+          <span className="topbar-search-text">Search</span>
+          <kbd className="topbar-kbd topbar-kbd-desktop">⌘K</kbd>
         </button>
 
         <button

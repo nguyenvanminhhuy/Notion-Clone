@@ -25,6 +25,8 @@ const Editor = lazy(() =>
   import('../editor/Editor').then((mod) => ({ default: mod.Editor }))
 );
 
+import { PageSkeleton } from './PageSkeleton';
+
 interface PageViewProps {
   pageId: string;
   onBackToDashboard?: () => void;
@@ -81,12 +83,7 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
 
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading) {
-    return (
-      <div className="page-view-loading">
-        <Loader2 size={24} className="animate-spin" />
-        <span>Loading page…</span>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   // ── Not found / archived ───────────────────────────────────────────────────

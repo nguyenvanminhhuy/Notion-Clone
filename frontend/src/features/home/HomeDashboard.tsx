@@ -4,6 +4,8 @@ import { FileText, Zap, Star, Clock, Plus, BookOpen } from 'lucide-react';
 import { MOCK_CURRENT_USER } from '../../mock/users';
 import { MOCK_PAGES, getRecentPages, getFavoritePages } from '../../mock/pages';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
+import { usePageStore } from '../../stores/pageStore';
+import { EmptyWorkspace } from './EmptyWorkspace';
 
 function formatRelativeTime(dateStr: string | null): string {
   if (!dateStr) return '';
@@ -45,8 +47,15 @@ const QUICK_ACTIONS = [
 
 export function HomeDashboard() {
   const { currentWorkspaceId } = useWorkspaceStore();
-  const recentPages = getRecentPages(MOCK_PAGES, currentWorkspaceId);
-  const favoritePages = getFavoritePages(MOCK_PAGES, currentWorkspaceId);
+  const { pages } = usePageStore();
+
+  const workspacePages = pages.filter((p) => !p.isArchived);
+  if (workspacePages.length === 0) {
+    return <EmptyWorkspace />;
+  }
+
+  const recentPages = getRecentPages(workspacePages, currentWorkspaceId);
+  const favoritePages = getFavoritePages(workspacePages, currentWorkspaceId);
 
   const greeting = (() => {
     const hour = new Date().getHours();
