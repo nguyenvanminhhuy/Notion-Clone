@@ -8,6 +8,7 @@ using NotionClone.Application.Interfaces;
 using NotionClone.Infrastructure.Authentication;
 using NotionClone.Infrastructure.Persistence;
 using NotionClone.Infrastructure.Services;
+using NotionClone.Infrastructure.Storage;
 
 namespace NotionClone.Infrastructure;
 
@@ -52,6 +53,9 @@ public static class DependencyInjection
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IShareService, ShareService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        services.AddScoped<IFileService, FileService>();
 
         return services;
     }
