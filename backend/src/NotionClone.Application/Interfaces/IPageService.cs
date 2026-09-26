@@ -19,4 +19,12 @@ public interface IPageService
 
     Task<string> GetPageContentAsync(Guid userId, Guid pageId, CancellationToken ct = default);
     Task<PageDto> UpdatePageContentAsync(Guid userId, Guid pageId, UpdatePageContentRequest request, CancellationToken ct = default);
+    Task<IEnumerable<PageVersionDto>> GetPageVersionsAsync(Guid userId, Guid pageId, CancellationToken ct = default);
+    Task<PageVersionDetailDto> GetPageVersionByIdAsync(Guid userId, Guid pageId, Guid versionId, CancellationToken ct = default);
+    Task<PageDto> RestorePageVersionAsync(Guid userId, Guid pageId, Guid versionId, CancellationToken ct = default);
+
+    Task<IEnumerable<PageDto>> GetFavoritePagesAsync(Guid userId, Guid workspaceId, CancellationToken ct = default);
+    Task<PageDto> RemoveFavoriteAsync(Guid userId, Guid pageId, CancellationToken ct = default);
+    Task<IEnumerable<PageDto>> GetTrashPagesAsync(Guid userId, Guid workspaceId, CancellationToken ct = default);
+    Task EmptyTrashAsync(Guid userId, Guid workspaceId, CancellationToken ct = default);
 }

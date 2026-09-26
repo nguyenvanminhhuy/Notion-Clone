@@ -55,3 +55,21 @@ public record MovePageRequest(
 public record UpdatePageContentRequest(
     string Content
 );
+
+public record PageVersionDto(
+    Guid Id,
+    Guid PageId,
+    Guid EditedById,
+    string EditedByName,
+    DateTime CreatedAt
+);
+
+public record PageVersionDetailDto(
+    Guid Id,
+    Guid PageId,
+    string Content,
+    Guid EditedById,
+    string EditedByName,
+    DateTime CreatedAt
+);
+

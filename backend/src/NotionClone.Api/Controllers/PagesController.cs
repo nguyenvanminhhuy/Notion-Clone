@@ -168,4 +168,37 @@ public class PagesController : ApiControllerBase
         var page = await _pageService.UpdatePageContentAsync(CurrentUserId, id, request, ct);
         return Ok(page);
     }
+
+    /// <summary>Get version history of a page.</summary>
+    [HttpGet("api/pages/{id:guid}/versions")]
+    [ProducesResponseType(typeof(IEnumerable<PageVersionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPageVersions(Guid id, CancellationToken ct)
+    {
+        var versions = await _pageService.GetPageVersionsAsync(CurrentUserId, id, ct);
+        return Ok(versions);
+    }
+
+    /// <summary>Get specific version content of a page.</summary>
+    [HttpGet("api/pages/{id:guid}/versions/{versionId:guid}")]
+    [ProducesResponseType(typeof(PageVersionDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPageVersion(Guid id, Guid versionId, CancellationToken ct)
+    {
+        var version = await _pageService.GetPageVersionByIdAsync(CurrentUserId, id, versionId, ct);
+        return Ok(version);
+    }
+
+    /// <summary>Restore a specific version of a page.</summary>
+    [HttpPost("api/pages/{id:guid}/versions/{versionId:guid}/restore")]
+    [ProducesResponseType(typeof(PageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestorePageVersion(Guid id, Guid versionId, CancellationToken ct)
+    {
+        var page = await _pageService.RestorePageVersionAsync(CurrentUserId, id, versionId, ct);
+        return Ok(page);
+    }
 }

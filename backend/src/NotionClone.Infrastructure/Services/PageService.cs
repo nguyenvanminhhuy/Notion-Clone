@@ -350,7 +350,7 @@ public class PageService : IPageService
         var page = await GetPageEntityAsync(pageId, ct);
         await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
 
-        page.Content = request.Content;
+        page.Content = request.Content ?? string.Empty;
         page.LastEditedById = userId;
         page.UpdatedAt = DateTime.UtcNow;
 
@@ -358,7 +358,7 @@ public class PageService : IPageService
         {
             Id = Guid.NewGuid(),
             PageId = page.Id,
-            Content = request.Content,
+            Content = page.Content,
             EditedById = userId,
             CreatedAt = DateTime.UtcNow
         };
@@ -367,6 +367,133 @@ public class PageService : IPageService
         await _dbContext.SaveChangesAsync(ct);
 
         return MapToPageDto(page);
+    }
+
+    public async Task<IEnumerable<PageVersionDto>> GetPageVersionsAsync(Guid userId, Guid pageId, CancellationToken ct = default)
+    {
+        var page = await GetPageEntityAsync(pageId, ct);
+        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+
+        var versions = await _dbContext.PageVersions
+            .AsNoTracking()
+            .Include(pv => pv.EditedBy)
+            .Where(pv => pv.PageId == pageId)
+            .OrderByDescending(pv => pv.CreatedAt)
+            .Select(pv => new PageVersionDto(
+                pv.Id,
+                pv.PageId,
+                pv.EditedById,
+                pv.EditedBy != null ? pv.EditedBy.Name : string.Empty,
+                pv.CreatedAt
+            ))
+            .ToListAsync(ct);
+
+        return versions;
+    }
+
+    public async Task<PageVersionDetailDto> GetPageVersionByIdAsync(Guid userId, Guid pageId, Guid versionId, CancellationToken ct = default)
+    {
+        var page = await GetPageEntityAsync(pageId, ct);
+        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+
+        var version = await _dbContext.PageVersions
+            .AsNoTracking()
+            .Include(pv => pv.EditedBy)
+            .FirstOrDefaultAsync(pv => pv.Id == versionId && pv.PageId == pageId, ct)
+            ?? throw new NotFoundException($"Version with ID '{versionId}' was not found for this page.");
+
+        return new PageVersionDetailDto(
+            version.Id,
+            version.PageId,
+            version.Content,
+            version.EditedById,
+            version.EditedBy != null ? version.EditedBy.Name : string.Empty,
+            version.CreatedAt
+        );
+    }
+
+    public async Task<PageDto> RestorePageVersionAsync(Guid userId, Guid pageId, Guid versionId, CancellationToken ct = default)
+    {
+        var page = await GetPageEntityAsync(pageId, ct);
+        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+
+        var version = await _dbContext.PageVersions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(pv => pv.Id == versionId && pv.PageId == pageId, ct)
+            ?? throw new NotFoundException($"Version with ID '{versionId}' was not found for this page.");
+
+        page.Content = version.Content;
+        page.LastEditedById = userId;
+        page.UpdatedAt = DateTime.UtcNow;
+
+        var versionSnapshot = new PageVersion
+        {
+            Id = Guid.NewGuid(),
+            PageId = page.Id,
+            Content = page.Content,
+            EditedById = userId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.PageVersions.Add(versionSnapshot);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return MapToPageDto(page);
+    }
+
+    public async Task<IEnumerable<PageDto>> GetFavoritePagesAsync(Guid userId, Guid workspaceId, CancellationToken ct = default)
+    {
+        await EnsureWorkspaceMemberAsync(userId, workspaceId, ct);
+
+        var favorites = await _dbContext.Pages
+            .AsNoTracking()
+            .Where(p => p.WorkspaceId == workspaceId && !p.IsArchived && p.IsFavorite)
+            .OrderByDescending(p => p.UpdatedAt)
+            .ToListAsync(ct);
+
+        return favorites.Select(MapToPageDto);
+    }
+
+    public async Task<PageDto> RemoveFavoriteAsync(Guid userId, Guid pageId, CancellationToken ct = default)
+    {
+        var page = await GetPageEntityAsync(pageId, ct);
+        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+
+        page.IsFavorite = false;
+        page.LastEditedById = userId;
+        page.UpdatedAt = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync(ct);
+
+        return MapToPageDto(page);
+    }
+
+    public async Task<IEnumerable<PageDto>> GetTrashPagesAsync(Guid userId, Guid workspaceId, CancellationToken ct = default)
+    {
+        await EnsureWorkspaceMemberAsync(userId, workspaceId, ct);
+
+        var trashPages = await _dbContext.Pages
+            .AsNoTracking()
+            .Where(p => p.WorkspaceId == workspaceId && p.IsArchived)
+            .OrderByDescending(p => p.UpdatedAt)
+            .ToListAsync(ct);
+
+        return trashPages.Select(MapToPageDto);
+    }
+
+    public async Task EmptyTrashAsync(Guid userId, Guid workspaceId, CancellationToken ct = default)
+    {
+        await EnsureWorkspaceMemberAsync(userId, workspaceId, ct);
+
+        var archivedPages = await _dbContext.Pages
+            .Where(p => p.WorkspaceId == workspaceId && p.IsArchived)
+            .ToListAsync(ct);
+
+        if (archivedPages.Count > 0)
+        {
+            _dbContext.Pages.RemoveRange(archivedPages);
+            await _dbContext.SaveChangesAsync(ct);
+        }
     }
 
     private async Task<Page> GetPageEntityAsync(Guid pageId, CancellationToken ct)
