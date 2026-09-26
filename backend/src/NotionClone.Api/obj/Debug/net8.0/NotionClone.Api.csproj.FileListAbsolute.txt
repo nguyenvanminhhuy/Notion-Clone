@@ -116,3 +116,12 @@ D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\ru\Microsoft.Cod
 D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Api\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

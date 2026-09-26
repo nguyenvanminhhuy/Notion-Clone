@@ -1,7 +1,13 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using NotionClone.Application.Interfaces;
+using NotionClone.Infrastructure.Authentication;
 using NotionClone.Infrastructure.Persistence;
+using NotionClone.Infrastructure.Services;
 
 namespace NotionClone.Infrastructure;
 
@@ -9,12 +15,40 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection") 
+        // Database
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? "Host=localhost;Database=notion_clone_db;Username=postgres;Password=postgres";
 
         services.AddDbContext<NotionDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        // JWT Authentication
+        var jwtSecret = configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("Jwt:Secret is not configured.");
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+                    ValidateIssuer = true,
+                    ValidIssuer = configuration["Jwt:Issuer"] ?? "NotionClone",
+                    ValidateAudience = true,
+                    ValidAudience = configuration["Jwt:Audience"] ?? "NotionCloneUsers",
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+        services.AddAuthorization();
+
+        // Application Services
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IAuthService, AuthService>();
+
         return services;
     }
 }
+

@@ -342,6 +342,44 @@ namespace NotionClone.Infrastructure.Migrations
                     b.ToTable("PageVersions");
                 });
 
+            modelBuilder.Entity("NotionClone.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("NotionClone.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -659,6 +697,17 @@ namespace NotionClone.Infrastructure.Migrations
                     b.Navigation("Page");
                 });
 
+            modelBuilder.Entity("NotionClone.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("NotionClone.Domain.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("NotionClone.Domain.Entities.UserSettings", b =>
                 {
                     b.HasOne("NotionClone.Domain.Entities.User", "User")
@@ -715,6 +764,8 @@ namespace NotionClone.Infrastructure.Migrations
             modelBuilder.Entity("NotionClone.Domain.Entities.User", b =>
                 {
                     b.Navigation("Notifications");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("Settings");
 

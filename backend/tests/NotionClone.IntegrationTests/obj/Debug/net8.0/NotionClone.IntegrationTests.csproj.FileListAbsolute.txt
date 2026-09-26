@@ -128,3 +128,12 @@ D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\M
 D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Npgsql.dll
 D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\Huy\NotionClone\backend\tests\NotionClone.IntegrationTests\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

@@ -21,6 +21,7 @@ public class NotionDbContext : DbContext
     public DbSet<FileAttachment> FileAttachments => Set<FileAttachment>();
     public DbSet<AIConversation> AIConversations => Set<AIConversation>();
     public DbSet<AIMessage> AIMessages => Set<AIMessage>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -188,6 +189,18 @@ public class NotionDbContext : DbContext
             builder.HasOne(m => m.Conversation)
                    .WithMany(c => c.Messages)
                    .HasForeignKey(m => m.ConversationId)
+                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // RefreshToken Entity
+        modelBuilder.Entity<RefreshToken>(builder =>
+        {
+            builder.HasIndex(rt => rt.Token).IsUnique();
+            builder.HasIndex(rt => rt.UserId);
+
+            builder.HasOne(rt => rt.User)
+                   .WithMany(u => u.RefreshTokens)
+                   .HasForeignKey(rt => rt.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
         });
     }

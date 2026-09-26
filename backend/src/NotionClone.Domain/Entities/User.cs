@@ -14,4 +14,5 @@ public class User : BaseEntity
     public UserSettings? Settings { get; set; }
     public ICollection<WorkspaceMember> WorkspaceMemberships { get; set; } = new List<WorkspaceMember>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
