@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Y1R8OU7FtAg=",
+  "dgSpecHash": "g4kg+mfwPR8=",
   "success": true,
-  "projectFilePath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj",
+  "projectFilePath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\huyca\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\huyca\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

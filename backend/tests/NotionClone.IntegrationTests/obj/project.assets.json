@@ -7116,11 +7116,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
+      "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
       "projectName": "NotionClone.IntegrationTests",
-      "projectPath": "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
+      "projectPath": "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
       "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-      "outputPath": "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\obj\\",
+      "outputPath": "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -7135,11 +7135,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj": {
-              "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj"
+            "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj": {
+              "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj"
             },
-            "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
-              "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj"
+            "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
+              "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj"
             }
           }
         }

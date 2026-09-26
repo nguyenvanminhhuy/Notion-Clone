@@ -2,6 +2,8 @@ namespace NotionClone.Application.Common.Exceptions;
 
 public class NotFoundException : Exception
 {
+    public NotFoundException(string message) : base(message) { }
+
     public NotFoundException(string name, object key)
         : base($"Entity \"{name}\" with key ({key}) was not found.") { }
 }
@@ -24,6 +26,11 @@ public class ConflictException : Exception
 public class ValidationException : Exception
 {
     public IDictionary<string, string[]> Errors { get; }
+
+    public ValidationException(string message) : base(message)
+    {
+        Errors = new Dictionary<string, string[]> { { "General", new[] { message } } };
+    }
 
     public ValidationException(IDictionary<string, string[]> errors)
         : base("One or more validation errors occurred.")
