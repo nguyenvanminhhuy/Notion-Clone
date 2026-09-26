@@ -1,0 +1,12 @@
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\bin\Debug\net8.0\NotionClone.Domain.deps.json
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\bin\Debug\net8.0\NotionClone.Domain.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\bin\Debug\net8.0\NotionClone.Domain.pdb
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.AssemblyInfoInputs.cache
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.AssemblyInfo.cs
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.csproj.CoreCompileInputs.cache
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.sourcelink.json
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\refint\NotionClone.Domain.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\NotionClone.Domain.pdb
+D:\Huy\NotionClone\backend\src\NotionClone.Domain\obj\Debug\net8.0\ref\NotionClone.Domain.dll
