@@ -1,0 +1,15 @@
+**/.git
+**/.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+**/bin
+**/obj
+**/*.user
+**/*.suo
+**/.vs
+**/TestResults
+**/node_modules
+README.md
+docker-compose.yml
+*.md

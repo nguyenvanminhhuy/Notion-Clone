@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL Database ────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: notion_clone_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: notion_clone_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notion_clone_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── ASP.NET Core API ────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notion_clone_api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+
+      # Database — override DB_PASSWORD via .env file or environment
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=notion_clone_db;
+        Username=postgres;Password=${DB_PASSWORD:-postgres}
+
+      # JWT — MUST be overridden in production via secrets / .env
+      Jwt__Secret: ${JWT_SECRET:-CHANGE_ME_TO_A_STRONG_SECRET_KEY_AT_LEAST_32_CHARS}
+      Jwt__Issuer: NotionClone
+      Jwt__Audience: NotionCloneUsers
+      Jwt__AccessTokenExpiryMinutes: "15"
+      Jwt__RefreshTokenExpiryDays: "7"
+
+      # CORS — comma-separated origins can be expanded here
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:3000}
+
+      # File storage — mount a volume in production
+      FileStorage__BasePath: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  postgres_data:
+  uploads_data:

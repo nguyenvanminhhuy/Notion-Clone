@@ -95,7 +95,7 @@ public class PageService : IPageService
     {
         var page = await _dbContext.Pages
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == pageId, ct)
+            .FirstOrDefaultAsync(p => p.Id == pageId && !p.IsArchived, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
         await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);

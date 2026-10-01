@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj": {}
+    "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj": {}
   },
   "projects": {
-    "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj": {
+    "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj",
+        "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj",
         "projectName": "NotionClone.Api",
-        "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj",
+        "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj",
         "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-        "outputPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\obj\\",
+        "outputPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,11 +26,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj": {
-                "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj"
+              "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj": {
+                "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj"
               },
-              "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
-                "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj"
+              "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
+                "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj"
               }
             }
           }
@@ -88,14 +88,14 @@
         }
       }
     },
-    "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj": {
+    "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
+        "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
         "projectName": "NotionClone.Application",
-        "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
+        "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
         "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-        "outputPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\obj\\",
+        "outputPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -110,8 +110,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj": {
-                "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj"
+              "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj": {
+                "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj"
               }
             }
           }
@@ -150,14 +150,14 @@
         }
       }
     },
-    "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj": {
+    "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj",
+        "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj",
         "projectName": "NotionClone.Domain",
-        "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj",
+        "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj",
         "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-        "outputPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\obj\\",
+        "outputPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -208,14 +208,14 @@
         }
       }
     },
-    "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
+    "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj",
+        "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj",
         "projectName": "NotionClone.Infrastructure",
-        "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj",
+        "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-        "outputPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\obj\\",
+        "outputPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -230,8 +230,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj": {
-                "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj"
+              "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj": {
+                "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj"
               }
             }
           }
@@ -292,14 +292,14 @@
         }
       }
     },
-    "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj": {
+    "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
+        "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
         "projectName": "NotionClone.IntegrationTests",
-        "projectPath": "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
+        "projectPath": "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\NotionClone.IntegrationTests.csproj",
         "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-        "outputPath": "d:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\obj\\",
+        "outputPath": "D:\\Huy\\NotionClone\\backend\\tests\\NotionClone.IntegrationTests\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -314,11 +314,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj": {
-                "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj"
+              "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj": {
+                "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Api\\NotionClone.Api.csproj"
               },
-              "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
-                "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj"
+              "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj": {
+                "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Infrastructure\\NotionClone.Infrastructure.csproj"
               }
             }
           }
@@ -338,6 +338,18 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Mvc.Testing": {
+              "target": "Package",
+              "version": "[8.0.14, )"
+            },
+            "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[8.0.14, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
               "version": "[17.8.0, )"

@@ -9,6 +9,7 @@ using NotionClone.Infrastructure.Authentication;
 using NotionClone.Infrastructure.Persistence;
 using NotionClone.Infrastructure.Services;
 using NotionClone.Infrastructure.Storage;
+using NotionClone.Infrastructure.AI;
 
 namespace NotionClone.Infrastructure;
 
@@ -56,6 +57,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IAiEngine, DefaultAiEngine>();
+        services.AddScoped<IAiService, AiService>();
 
         return services;
     }

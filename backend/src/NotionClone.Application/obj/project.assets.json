@@ -32,11 +32,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
+      "projectUniqueName": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
       "projectName": "NotionClone.Application",
-      "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
+      "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\NotionClone.Application.csproj",
       "packagesPath": "C:\\Users\\huyca\\.nuget\\packages\\",
-      "outputPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\obj\\",
+      "outputPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\huyca\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -51,8 +51,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj": {
-              "projectPath": "d:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj"
+            "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj": {
+              "projectPath": "D:\\Huy\\NotionClone\\backend\\src\\NotionClone.Domain\\NotionClone.Domain.csproj"
             }
           }
         }

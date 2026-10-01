@@ -1,0 +1,16 @@
+D:\Huy\NotionClone\backend\src\NotionClone.Application\bin\Release\net8.0\NotionClone.Application.deps.json
+D:\Huy\NotionClone\backend\src\NotionClone.Application\bin\Release\net8.0\NotionClone.Application.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Application\bin\Release\net8.0\NotionClone.Application.pdb
+D:\Huy\NotionClone\backend\src\NotionClone.Application\bin\Release\net8.0\NotionClone.Domain.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Application\bin\Release\net8.0\NotionClone.Domain.pdb
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.csproj.AssemblyReference.cache
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.AssemblyInfoInputs.cache
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.AssemblyInfo.cs
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.csproj.CoreCompileInputs.cache
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.sourcelink.json
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionCl.BD20DB6E.Up2Date
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\refint\NotionClone.Application.dll
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\NotionClone.Application.pdb
+D:\Huy\NotionClone\backend\src\NotionClone.Application\obj\Release\net8.0\ref\NotionClone.Application.dll
