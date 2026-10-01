@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { mockCommentService } from '../mock/mockCommentService';
+import { commentService } from '../services/commentService';
 import type { Comment } from '../types/comment';
 import { useToastStore } from './toastStore';
 
@@ -20,7 +20,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
   loadComments: async (pageId) => {
     set({ isLoading: true });
     try {
-      const data = await mockCommentService.getComments(pageId);
+      const data = await commentService.getComments(pageId);
       set((state) => ({
         comments: { ...state.comments, [pageId]: data },
         isLoading: false,
@@ -33,7 +33,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
 
   createComment: async (pageId, content) => {
     try {
-      const newComment = await mockCommentService.createComment({ pageId, content });
+      const newComment = await commentService.createComment({ pageId, content });
       set((state) => {
         const pageComments = state.comments[pageId] || [];
         return { comments: { ...state.comments, [pageId]: [...pageComments, newComment] } };
@@ -46,11 +46,11 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
 
   replyToComment: async (pageId, commentId, content) => {
     try {
-      const reply = await mockCommentService.replyToComment(commentId, content);
+      const reply = await commentService.replyToComment(commentId, content);
       set((state) => {
         const pageComments = state.comments[pageId] || [];
         const updated = pageComments.map((c) => 
-          c.id === commentId ? { ...c, replies: [...c.replies, reply] } : c
+          c.id === commentId ? { ...c, replies: [...(c.replies || []), reply] } : c
         );
         return { comments: { ...state.comments, [pageId]: updated } };
       });
@@ -62,13 +62,13 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
 
   resolveComment: async (pageId, commentId) => {
     try {
-      await mockCommentService.resolveComment(commentId);
+      const updated = await commentService.resolveComment(commentId);
       set((state) => {
         const pageComments = state.comments[pageId] || [];
-        const updated = pageComments.map((c) => 
-          c.id === commentId ? { ...c, resolved: true } : c
+        const mapped = pageComments.map((c) => 
+          c.id === commentId ? { ...c, resolved: updated.resolved } : c
         );
-        return { comments: { ...state.comments, [pageId]: updated } };
+        return { comments: { ...state.comments, [pageId]: mapped } };
       });
     } catch (error) {
       console.error(error);
@@ -78,7 +78,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
 
   deleteComment: async (pageId, commentId) => {
     try {
-      await mockCommentService.deleteComment(commentId);
+      await commentService.deleteComment(commentId);
       set((state) => {
         const pageComments = state.comments[pageId] || [];
         const updated = pageComments.filter((c) => c.id !== commentId);
@@ -88,5 +88,5 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
       console.error(error);
       useToastStore.getState().addToast({ message: 'Failed to delete comment', type: 'error' });
     }
-  }
+  },
 }));

@@ -9,6 +9,7 @@ import { EditorSaveStatus } from '../editor/EditorSaveStatus';
 import { CommentList } from '../comments/CommentList';
 import { AIAssistantPanel } from '../ai/AIAssistantPanel';
 import { PageHistoryModal } from './PageHistoryModal';
+import { ShareDialog } from '../sharing/ShareDialog';
 import {
   Star,
   Share2,
@@ -19,6 +20,7 @@ import {
   ArrowLeft,
   History,
 } from 'lucide-react';
+
 import type { Page } from '../../types/page';
 import { pageService } from '../../services/pageService';
 
@@ -228,7 +230,11 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
         onClose={() => setHistoryOpen(false)}
         onRestored={(restored) => setCurrentPage(restored)}
       />
+
+      {/* ── Share Dialog ─────────────────────────────────────────────────── */}
+      <ShareDialog />
     </div>
   );
 }
+
 
