@@ -8,6 +8,7 @@ import { PageHeader } from './PageHeader';
 import { EditorSaveStatus } from '../editor/EditorSaveStatus';
 import { CommentList } from '../comments/CommentList';
 import { AIAssistantPanel } from '../ai/AIAssistantPanel';
+import { PageHistoryModal } from './PageHistoryModal';
 import {
   Star,
   Share2,
@@ -16,6 +17,7 @@ import {
   MoreHorizontal,
   Loader2,
   ArrowLeft,
+  History,
 } from 'lucide-react';
 import type { Page } from '../../types/page';
 import { pageService } from '../../services/pageService';
@@ -40,6 +42,8 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
 
   // Mark this page as selected in the store (highlights it in the sidebar)
   useEffect(() => {
@@ -172,8 +176,13 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
             <span className="page-toolbar-btn-label">AI</span>
           </button>
 
-          <button className="topbar-icon-btn" aria-label="More options">
-            <MoreHorizontal size={16} />
+          <button
+            className="page-toolbar-btn"
+            aria-label="Version history"
+            onClick={() => setHistoryOpen(true)}
+          >
+            <History size={16} />
+            <span className="page-toolbar-btn-label">History</span>
           </button>
         </div>
       </div>
@@ -211,6 +220,15 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
 
       {/* ── AI Assistant Panel ───────────────────────────────────────────── */}
       <AIAssistantPanel pageTitle={currentPage.title} pageContentText={currentPage.content} />
+
+      {/* ── Page History Modal ───────────────────────────────────────────── */}
+      <PageHistoryModal
+        page={currentPage}
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onRestored={(restored) => setCurrentPage(restored)}
+      />
     </div>
   );
 }
+

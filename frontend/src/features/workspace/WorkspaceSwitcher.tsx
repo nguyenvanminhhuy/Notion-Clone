@@ -7,12 +7,27 @@ import { useWorkspaceStore } from '../../stores/workspaceStore';
 
 export function WorkspaceSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
-  const { workspaces, currentWorkspaceId, setCurrentWorkspace } = useWorkspaceStore();
+  const [isCreating, setIsCreating] = useState(false);
+  const [newWsName, setNewWsName] = useState('');
+  const { workspaces, currentWorkspaceId, setCurrentWorkspace, createWorkspace } = useWorkspaceStore();
   const currentWorkspace = workspaces.find((ws) => ws.id === currentWorkspaceId);
 
   const handleSelect = (id: string) => {
     setCurrentWorkspace(id);
     setIsOpen(false);
+  };
+
+  const handleCreateWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWsName.trim()) return;
+    try {
+      await createWorkspace({ name: newWsName.trim(), iconEmoji: '💼' });
+      setNewWsName('');
+      setIsCreating(false);
+      setIsOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -39,7 +54,10 @@ export function WorkspaceSwitcher() {
             {/* Backdrop */}
             <div
               className="fixed inset-0 z-10"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setIsCreating(false);
+              }}
             />
             <motion.div
               className="workspace-dropdown"
@@ -65,14 +83,34 @@ export function WorkspaceSwitcher() {
                 ))}
               </div>
               <div className="workspace-dropdown-footer">
-                <button className="workspace-action-btn">
-                  <Plus size={14} />
-                  <span>New Workspace</span>
-                </button>
-                <button className="workspace-action-btn">
-                  <Settings size={14} />
-                  <span>Settings</span>
-                </button>
+                {isCreating ? (
+                  <form onSubmit={handleCreateWorkspace} className="flex items-center gap-1 p-1 w-full">
+                    <input
+                      type="text"
+                      value={newWsName}
+                      onChange={(e) => setNewWsName(e.target.value)}
+                      placeholder="Workspace name..."
+                      autoFocus
+                      className="w-full text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-zinc-100 focus:outline-hidden"
+                    />
+                    <button
+                      type="submit"
+                      className="px-2 py-1 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium"
+                    >
+                      Add
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <button
+                      className="workspace-action-btn"
+                      onClick={() => setIsCreating(true)}
+                    >
+                      <Plus size={14} />
+                      <span>New Workspace</span>
+                    </button>
+                  </>
+                )}
               </div>
             </motion.div>
           </>
