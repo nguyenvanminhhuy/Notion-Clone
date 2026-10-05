@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\NotionClone.Api.props" />
-</Project>
