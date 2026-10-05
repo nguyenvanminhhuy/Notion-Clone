@@ -15,8 +15,7 @@ export function NotificationCenter() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Assuming user-1 for mock
-    loadNotifications('user-1');
+    loadNotifications();
   }, [loadNotifications]);
 
   // Click outside to close
@@ -104,7 +103,7 @@ export function NotificationCenter() {
             </div>
             {unreadCount > 0 && (
               <button 
-                onClick={() => markAllAsRead('user-1')}
+                onClick={() => markAllAsRead()}
                 style={{ background: 'none', border: 'none', fontSize: '11px', color: 'var(--color-text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 <CheckCheck size={12} /> Mark all read
