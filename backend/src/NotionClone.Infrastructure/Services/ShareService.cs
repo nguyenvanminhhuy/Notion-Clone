@@ -12,10 +12,12 @@ namespace NotionClone.Infrastructure.Services;
 public class ShareService : IShareService
 {
     private readonly NotionDbContext _dbContext;
+    private readonly IPageAuthorizationService _authorization;
 
-    public ShareService(NotionDbContext dbContext)
+    public ShareService(NotionDbContext dbContext, IPageAuthorizationService? authorization = null)
     {
         _dbContext = dbContext;
+        _authorization = authorization ?? new PageAuthorizationService(dbContext);
     }
 
     public async Task<IEnumerable<PageShareDto>> GetPageSharesAsync(Guid userId, Guid pageId, CancellationToken ct = default)
@@ -25,7 +27,7 @@ public class ShareService : IShareService
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.ManageSharing, ct);
 
         var shares = await _dbContext.PageShares
             .AsNoTracking()
@@ -50,7 +52,7 @@ public class ShareService : IShareService
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.ManageSharing, ct);
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
@@ -101,7 +103,7 @@ public class ShareService : IShareService
             .FirstOrDefaultAsync(ps => ps.Id == shareId, ct)
             ?? throw new NotFoundException($"Share record with ID '{shareId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, share.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, share.PageId, PagePermission.ManageSharing, ct);
 
         share.Role = request.Role;
         share.UpdatedAt = DateTime.UtcNow;
@@ -118,7 +120,7 @@ public class ShareService : IShareService
             .FirstOrDefaultAsync(ps => ps.Id == shareId, ct)
             ?? throw new NotFoundException($"Share record with ID '{shareId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, share.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, share.PageId, PagePermission.ManageSharing, ct);
 
         _dbContext.PageShares.Remove(share);
         await _dbContext.SaveChangesAsync(ct);
@@ -130,7 +132,7 @@ public class ShareService : IShareService
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Publish, ct);
 
         page.IsPublic = request.IsPublic;
         page.LastEditedById = userId;
@@ -141,14 +143,14 @@ public class ShareService : IShareService
         return MapToPageDto(page);
     }
 
-    public async Task<PageDto> GetPublicPageAsync(Guid pageId, CancellationToken ct = default)
+    public async Task<PublicPageDto> GetPublicPageAsync(Guid pageId, CancellationToken ct = default)
     {
         var page = await _dbContext.Pages
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == pageId && p.IsPublic && !p.IsArchived, ct)
             ?? throw new NotFoundException($"Public page with ID '{pageId}' was not found.");
 
-        return MapToPageDto(page);
+        return new PublicPageDto(page.Id, page.Title, page.Icon, page.Cover, page.Content, page.UpdatedAt);
     }
 
     private async Task EnsureWorkspaceMemberAsync(Guid userId, Guid workspaceId, CancellationToken ct)

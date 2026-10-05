@@ -18,6 +18,15 @@ public record PageDto(
     DateTime? LastOpenedAt
 );
 
+public record PublicPageDto(
+    Guid Id,
+    string Title,
+    string? Icon,
+    string? Cover,
+    string Content,
+    DateTime UpdatedAt
+);
+
 public record PageTreeItemDto(
     Guid Id,
     Guid WorkspaceId,
@@ -72,4 +81,3 @@ public record PageVersionDetailDto(
     string EditedByName,
     DateTime CreatedAt
 );
-

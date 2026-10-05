@@ -43,6 +43,6 @@ public class DefaultAiEngine : IAiEngine
                 $"Based on your request \"{(string.IsNullOrWhiteSpace(prompt) ? "Ask AI" : prompt)}\":\n\n1. **Analysis**: Identified primary requirements and core concepts.\n2. **Recommendation**: Implement modular component structures and automated state tracking.\n3. **Summary**: Clean, scalable solution ready for immediate deployment."
         };
 
-        return Task.FromResult(result);
+        return Task.FromResult($"[Demo AI] {result}");
     }
 }

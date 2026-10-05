@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { buildEditorExtensions } from './editorExtensions';
 import { BubbleMenuBar } from './BubbleMenuBar';
@@ -8,7 +8,8 @@ import { FloatingToolbar } from './FloatingToolbar';
 
 interface EditorProps {
   initialContent: string;
-  onSave: (content: string) => void;
+  onSave: (content: string) => Promise<void>;
+  onSaveError?: (error: unknown) => void;
   onSavingStateChange?: (isSaving: boolean) => void;
   placeholder?: string;
   editable?: boolean;
@@ -21,11 +22,30 @@ export function Editor({
   initialContent,
   onSave,
   onSavingStateChange,
+  onSaveError,
   editable = true,
   pageId,
 }: EditorProps) {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const pendingContentRef = useRef<string | null>(null);
+  const onSaveRef = useRef(onSave);
+  const onSaveErrorRef = useRef(onSaveError);
+
+  useEffect(() => {
+    onSaveRef.current = onSave;
+    onSaveErrorRef.current = onSaveError;
+  }, [onSave, onSaveError]);
+
+  const performSave = useCallback(async (contentJson: string) => {
+    onSavingStateChange?.(true);
+    try {
+      await onSave(contentJson);
+    } catch (error) {
+      onSaveError?.(error);
+    } finally {
+      onSavingStateChange?.(false);
+    }
+  }, [onSave, onSaveError, onSavingStateChange]);
 
   // Parse initial content safely
   const getInitialContent = () => {
@@ -44,17 +64,26 @@ export function Editor({
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
       }
-      setIsSaving(true);
+      pendingContentRef.current = contentJson;
       onSavingStateChange?.(true);
 
-      saveTimerRef.current = setTimeout(() => {
-        onSave(contentJson);
-        setIsSaving(false);
-        onSavingStateChange?.(false);
+      saveTimerRef.current = setTimeout(async () => {
+        saveTimerRef.current = null;
+        pendingContentRef.current = null;
+        await performSave(contentJson);
       }, AUTOSAVE_DELAY_MS);
     },
-    [onSave, onSavingStateChange]
+    [onSavingStateChange, performSave]
   );
+
+  useEffect(() => () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    const pendingContent = pendingContentRef.current;
+    pendingContentRef.current = null;
+    if (pendingContent) {
+      void onSaveRef.current(pendingContent).catch((error) => onSaveErrorRef.current?.(error));
+    }
+  }, []);
 
   const editor = useEditor({
     extensions: buildEditorExtensions(),
@@ -84,12 +113,12 @@ export function Editor({
   return (
     <div className="editor-wrapper" style={{ position: 'relative' }}>
       {/* Bubble menu for text selection */}
-      <BubbleMenuBar editor={editor} />
+      {editable && <BubbleMenuBar editor={editor} />}
 
       {/* Editor content area — also anchors slash menu */}
       <div className="editor-scroll-area" style={{ position: 'relative' }}>
         {/* Slash command floating menu */}
-        <FloatingToolbar editor={editor} pageId={pageId ?? null} />
+        {editable && <FloatingToolbar editor={editor} pageId={pageId ?? null} />}
 
         <EditorContent
           editor={editor}

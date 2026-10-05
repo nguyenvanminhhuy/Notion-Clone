@@ -111,4 +111,25 @@ public class CommentsAndSharingTests
         var retrievedPublic = await shareService.GetPublicPageAsync(pageId);
         Assert.Equal("Collaboration Doc", retrievedPublic.Title);
     }
+
+    [Fact]
+    public async Task PublicPage_DisablingAccessImmediatelyDeniesAnonymousRead()
+    {
+        await using var db = CreateInMemoryDbContext();
+        var (userId, _, pageId) = await SetupPageAsync(db);
+        var service = new ShareService(db);
+
+        await Assert.ThrowsAsync<NotionClone.Application.Common.Exceptions.NotFoundException>(() =>
+            service.GetPublicPageAsync(pageId));
+
+        await service.TogglePublicAccessAsync(userId, pageId, new TogglePublicAccessRequest(true));
+        var publicPage = await service.GetPublicPageAsync(pageId);
+        var serialized = System.Text.Json.JsonSerializer.Serialize(publicPage);
+        Assert.DoesNotContain("WorkspaceId", serialized);
+        Assert.DoesNotContain("CreatedById", serialized);
+
+        await service.TogglePublicAccessAsync(userId, pageId, new TogglePublicAccessRequest(false));
+        await Assert.ThrowsAsync<NotionClone.Application.Common.Exceptions.NotFoundException>(() =>
+            service.GetPublicPageAsync(pageId));
+    }
 }

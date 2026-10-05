@@ -3,12 +3,15 @@ using Microsoft.OpenApi.Models;
 using NotionClone.Api.Middleware;
 using NotionClone.Infrastructure;
 using System.Threading.RateLimiting;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger with JWT support
@@ -71,6 +74,14 @@ builder.Services.AddRateLimiter(options =>
     options.AddFixedWindowLimiter("auth", opt =>
     {
         opt.PermitLimit = 20;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
+
+    options.AddFixedWindowLimiter("ai", opt =>
+    {
+        opt.PermitLimit = 30;
         opt.Window = TimeSpan.FromMinutes(1);
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 2;

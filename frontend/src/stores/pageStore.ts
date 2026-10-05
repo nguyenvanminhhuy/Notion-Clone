@@ -12,6 +12,7 @@ interface PageStore {
   selectPage: (id: string | null) => void;
   createPage: (workspaceId: string, parentId?: string | null) => Promise<Page>;
   updatePage: (id: string, data: Partial<Page>) => Promise<void>;
+  updatePageContent: (id: string, content: string) => Promise<void>;
   deletePage: (id: string) => Promise<void>;
   restorePage: (id: string) => Promise<void>;
   permanentDeletePage: (id: string) => Promise<void>;
@@ -126,6 +127,25 @@ export const usePageStore = create<PageStore>((set, get) => ({
     }
   },
 
+  updatePageContent: async (id, content) => {
+    const previousPages = get().pages;
+    try {
+      const updated = await pageService.updatePageContent(id, content);
+      set((state) => ({
+        pages: state.pages.map((page) => (page.id === id ? updated : page)),
+      }));
+    } catch (error) {
+      set({ pages: previousPages });
+      useToastStore.getState().addToast({
+        message: getErrorMessage(error),
+        type: 'error',
+        duration: 5000,
+      });
+      logError('pageStore.updatePageContent', error);
+      throw error;
+    }
+  },
+
   deletePage: async (id) => {
     const page = get().pages.find((p) => p.id === id);
     if (!page) return;
@@ -191,9 +211,15 @@ export const usePageStore = create<PageStore>((set, get) => ({
     try {
       await pageService.restorePage(id);
       set((state) => ({
-        pages: state.pages.map((p) =>
-          p.id === id ? { ...p, isArchived: false } : p
-        ),
+        pages: state.pages.map((p) => {
+          const isDescendant = (candidate: Page): boolean => {
+            if (!candidate.parentId) return false;
+            if (candidate.parentId === id) return true;
+            const parent = state.pages.find((page) => page.id === candidate.parentId);
+            return parent ? isDescendant(parent) : false;
+          };
+          return p.id === id || isDescendant(p) ? { ...p, isArchived: false } : p;
+        }),
       }));
       useToastStore.getState().addToast({
         message: 'Page restored',

@@ -39,7 +39,7 @@ interface PageViewProps {
 }
 
 export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
-  const { pages, updatePage, toggleFavorite, selectPage } = usePageStore();
+  const { pages, updatePageContent, toggleFavorite, selectPage } = usePageStore();
   const { isCommentsOpen, toggleComments, setShareOpen } = useUIStore();
   const { isPanelOpen: isAIPanelOpen, togglePanel: toggleAIPanel } = useAIStore();
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
@@ -83,13 +83,11 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
 
   const handleSaveContent = useCallback(
     async (content: string) => {
-      if (!currentPage) return;
-      setIsSaving(true);
-      await updatePage(currentPage.id, { content });
-      setIsSaving(false);
+      if (!pageId) return;
+      await updatePageContent(pageId, content);
       setLastSaved(new Date());
     },
-    [currentPage, updatePage]
+    [pageId, updatePageContent]
   );
 
   // ── Loading state ──────────────────────────────────────────────────────────
@@ -269,5 +267,3 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
     </div>
   );
 }
-
-

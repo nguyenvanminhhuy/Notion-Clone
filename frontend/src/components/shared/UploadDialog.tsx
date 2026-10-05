@@ -257,7 +257,7 @@ export function UploadDialog() {
                     Click or drag file to upload
                   </h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>
-                    Images, PDF, Word, TXT — max {formatBytes(FILE_CONSTRAINTS.maxSizeBytes)}
+                    Images and PDF — max {formatBytes(FILE_CONSTRAINTS.maxSizeBytes)}
                   </p>
                 </div>
               )}

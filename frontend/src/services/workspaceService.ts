@@ -67,7 +67,7 @@ export const workspaceService = {
   },
 
   async updateWorkspace(id: string, data: Partial<Workspace>): Promise<Workspace> {
-    const dto = await httpClient.put<WorkspaceDto>(`/api/workspaces/${id}`, {
+    const dto = await httpClient.patch<WorkspaceDto>(`/api/workspaces/${id}`, {
       name: data.name,
       iconEmoji: data.iconEmoji,
       iconUrl: data.iconUrl,
@@ -94,14 +94,14 @@ export const workspaceService = {
     return mapMember(dto);
   },
 
-  async updateMemberRole(workspaceId: string, userId: string, role: UserRole): Promise<void> {
+  async updateMemberRole(workspaceId: string, memberId: string, role: UserRole): Promise<void> {
     const roleCapitalized = role.charAt(0).toUpperCase() + role.slice(1);
-    await httpClient.put(`/api/workspaces/${workspaceId}/members/${userId}`, {
+    await httpClient.patch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
       role: roleCapitalized,
     });
   },
 
-  async removeMember(workspaceId: string, userId: string): Promise<void> {
-    await httpClient.delete(`/api/workspaces/${workspaceId}/members/${userId}`);
+  async removeMember(workspaceId: string, memberId: string): Promise<void> {
+    await httpClient.delete(`/api/workspaces/${workspaceId}/members/${memberId}`);
   },
 };

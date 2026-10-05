@@ -13,6 +13,33 @@ interface BackendShareDto {
   createdAt: string;
 }
 
+export interface PublicPage {
+  id: string;
+  title: string;
+  icon: string | null;
+  cover: string | null;
+  content: string;
+  updatedAt: string;
+}
+
+interface BackendPageDto {
+  id: string;
+  workspaceId: string;
+  parentId: string | null;
+  title: string;
+  icon: string | null;
+  cover: string | null;
+  content: string;
+  isFavorite: boolean;
+  isArchived: boolean;
+  isPublic: boolean;
+  createdById: string;
+  lastEditedById: string;
+  createdAt: string;
+  updatedAt: string;
+  lastOpenedAt: string | null;
+}
+
 function mapShare(dto: BackendShareDto): PageShare {
   return {
     id: dto.id,
@@ -52,9 +79,17 @@ export const shareService = {
   },
 
   async togglePublicAccess(pageId: string, isPublic: boolean): Promise<Page> {
-    const response = await httpClient.post<Page>(`/api/pages/${pageId}/public`, {
+    const response = await httpClient.post<BackendPageDto>(`/api/pages/${pageId}/public`, {
       isPublic,
     });
-    return response;
+    return {
+      ...response,
+      createdBy: response.createdById,
+      lastEditedBy: response.lastEditedById,
+    };
+  },
+
+  async getPublicPage(pageId: string): Promise<PublicPage> {
+    return httpClient.get<PublicPage>(`/api/public/pages/${pageId}`, { skipAuth: true });
   },
 };

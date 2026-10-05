@@ -11,10 +11,12 @@ namespace NotionClone.Infrastructure.Services;
 public class CommentService : ICommentService
 {
     private readonly NotionDbContext _dbContext;
+    private readonly IPageAuthorizationService _authorization;
 
-    public CommentService(NotionDbContext dbContext)
+    public CommentService(NotionDbContext dbContext, IPageAuthorizationService? authorization = null)
     {
         _dbContext = dbContext;
+        _authorization = authorization ?? new PageAuthorizationService(dbContext);
     }
 
     public async Task<IEnumerable<CommentDto>> GetPageCommentsAsync(Guid userId, Guid pageId, CancellationToken ct = default)
@@ -24,7 +26,7 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         var topLevelComments = await _dbContext.Comments
             .AsNoTracking()
@@ -50,7 +52,16 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Comment, ct);
+
+        if (request.ParentId.HasValue)
+        {
+            var validParent = await _dbContext.Comments
+                .AsNoTracking()
+                .AnyAsync(comment => comment.Id == request.ParentId.Value && comment.PageId == pageId, ct);
+            if (!validParent)
+                throw new ValidationException("The parent comment must belong to the same page.");
+        }
 
         var user = await _dbContext.Users
             .AsNoTracking()
@@ -97,7 +108,7 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(c => c.Id == commentId, ct)
             ?? throw new NotFoundException($"Comment with ID '{commentId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, parentComment.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, parentComment.PageId, PagePermission.Comment, ct);
 
         var user = await _dbContext.Users
             .AsNoTracking()
@@ -144,9 +155,10 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(c => c.Id == commentId, ct)
             ?? throw new NotFoundException($"Comment with ID '{commentId}' was not found.");
 
-        var member = await EnsureWorkspaceMemberAsync(userId, comment.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, comment.PageId, PagePermission.Comment, ct);
+        var canModerate = await _authorization.HasPagePermissionAsync(userId, comment.PageId, PagePermission.ManageSharing, ct);
 
-        if (comment.UserId != userId && member.Role != UserRole.Owner && member.Role != UserRole.Admin)
+        if (comment.UserId != userId && !canModerate)
         {
             throw new ForbiddenException("You can only edit your own comments.");
         }
@@ -169,7 +181,7 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(c => c.Id == commentId, ct)
             ?? throw new NotFoundException($"Comment with ID '{commentId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, comment.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, comment.PageId, PagePermission.Edit, ct);
 
         comment.IsResolved = !comment.IsResolved;
         comment.UpdatedAt = DateTime.UtcNow;
@@ -187,9 +199,10 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(c => c.Id == commentId, ct)
             ?? throw new NotFoundException($"Comment with ID '{commentId}' was not found.");
 
-        var member = await EnsureWorkspaceMemberAsync(userId, comment.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, comment.PageId, PagePermission.Comment, ct);
+        var canModerate = await _authorization.HasPagePermissionAsync(userId, comment.PageId, PagePermission.ManageSharing, ct);
 
-        if (comment.UserId != userId && member.Role != UserRole.Owner && member.Role != UserRole.Admin)
+        if (comment.UserId != userId && !canModerate)
         {
             throw new ForbiddenException("You can only delete your own comments.");
         }

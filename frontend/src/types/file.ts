@@ -19,10 +19,6 @@ export const FILE_CONSTRAINTS = {
     'image/png',
     'image/gif',
     'image/webp',
-    'image/svg+xml',
     'application/pdf',
-    'text/plain',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ],
 } as const;

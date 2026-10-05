@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NotionClone.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a249e37f72ddc5576e95495550aaf461f543d306")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+67dd12556ec2d842f0289dadf03dd641f2705432")]
 [assembly: System.Reflection.AssemblyProductAttribute("NotionClone.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NotionClone.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

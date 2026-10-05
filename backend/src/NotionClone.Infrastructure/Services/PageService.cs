@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.Json;
 using NotionClone.Application.Common.Exceptions;
 using NotionClone.Application.DTOs.Page;
 using NotionClone.Application.Interfaces;
@@ -9,11 +11,14 @@ namespace NotionClone.Infrastructure.Services;
 
 public class PageService : IPageService
 {
+    private const int MaxContentBytes = 1024 * 1024;
     private readonly NotionDbContext _dbContext;
+    private readonly IPageAuthorizationService _authorization;
 
-    public PageService(NotionDbContext dbContext)
+    public PageService(NotionDbContext dbContext, IPageAuthorizationService? authorization = null)
     {
         _dbContext = dbContext;
+        _authorization = authorization ?? new PageAuthorizationService(dbContext);
     }
 
     public async Task<IEnumerable<PageDto>> GetWorkspacePagesAsync(Guid userId, Guid workspaceId, CancellationToken ct = default)
@@ -98,20 +103,20 @@ public class PageService : IPageService
             .FirstOrDefaultAsync(p => p.Id == pageId && !p.IsArchived, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         return MapToPageDto(page);
     }
 
     public async Task<PageDto> CreatePageAsync(Guid userId, Guid workspaceId, CreatePageRequest request, CancellationToken ct = default)
     {
-        await EnsureWorkspaceMemberAsync(userId, workspaceId, ct);
+        await _authorization.EnsureCanCreatePageAsync(userId, workspaceId, ct);
 
         if (request.ParentId.HasValue)
         {
             var parent = await _dbContext.Pages
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == request.ParentId.Value && p.WorkspaceId == workspaceId, ct)
+                .FirstOrDefaultAsync(p => p.Id == request.ParentId.Value && p.WorkspaceId == workspaceId && !p.IsArchived, ct)
                 ?? throw new NotFoundException($"Parent page with ID '{request.ParentId.Value}' was not found in this workspace.");
         }
 
@@ -144,12 +149,24 @@ public class PageService : IPageService
     public async Task<PageDto> UpdatePageAsync(Guid userId, Guid pageId, UpdatePageRequest request, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
+
+        if (request.IsArchived.HasValue)
+        {
+            await _authorization.EnsurePagePermissionAsync(
+                userId,
+                pageId,
+                request.IsArchived.Value ? PagePermission.Archive : PagePermission.Restore,
+                ct);
+        }
+        if (request.IsPublic.HasValue)
+            await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Publish, ct);
 
         if (request.Title != null) page.Title = string.IsNullOrWhiteSpace(request.Title) ? "Untitled" : request.Title.Trim();
         if (request.Icon != null) page.Icon = request.Icon;
         if (request.Cover != null) page.Cover = request.Cover;
-        if (request.Content != null) page.Content = request.Content;
+        if (request.Content != null)
+            throw new ValidationException("Page content must be updated through the dedicated content endpoint.");
         if (request.IsFavorite.HasValue) page.IsFavorite = request.IsFavorite.Value;
         if (request.IsArchived.HasValue) page.IsArchived = request.IsArchived.Value;
         if (request.IsPublic.HasValue) page.IsPublic = request.IsPublic.Value;
@@ -165,7 +182,7 @@ public class PageService : IPageService
     public async Task<PageDto> MovePageAsync(Guid userId, Guid pageId, MovePageRequest request, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Move, ct);
 
         if (request.TargetParentId.HasValue)
         {
@@ -178,7 +195,7 @@ public class PageService : IPageService
 
             var targetParent = await _dbContext.Pages
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == targetParentId && p.WorkspaceId == page.WorkspaceId, ct)
+                .FirstOrDefaultAsync(p => p.Id == targetParentId && p.WorkspaceId == page.WorkspaceId && !p.IsArchived, ct)
                 ?? throw new NotFoundException($"Target parent page with ID '{targetParentId}' was not found in this workspace.");
 
             // Cycle detection: traverse up from targetParentId to root
@@ -212,7 +229,7 @@ public class PageService : IPageService
     public async Task SoftDeletePageAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Archive, ct);
 
         var descendantIds = await GetAllDescendantIdsAsync(pageId, ct);
         descendantIds.Add(pageId);
@@ -234,11 +251,21 @@ public class PageService : IPageService
     public async Task<PageDto> RestorePageAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Restore, ct);
 
-        page.IsArchived = false;
-        page.LastEditedById = userId;
-        page.UpdatedAt = DateTime.UtcNow;
+        var descendantIds = await GetAllDescendantIdsAsync(pageId, ct);
+        descendantIds.Add(pageId);
+
+        var pagesToRestore = await _dbContext.Pages
+            .Where(p => descendantIds.Contains(p.Id))
+            .ToListAsync(ct);
+
+        foreach (var restoredPage in pagesToRestore)
+        {
+            restoredPage.IsArchived = false;
+            restoredPage.LastEditedById = userId;
+            restoredPage.UpdatedAt = DateTime.UtcNow;
+        }
 
         // Also un-archive parent ancestors if they are archived
         var currentParentId = page.ParentId;
@@ -268,7 +295,7 @@ public class PageService : IPageService
     public async Task PermanentDeletePageAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.DeletePermanently, ct);
 
         var descendantIds = await GetAllDescendantIdsAsync(pageId, ct);
         descendantIds.Add(pageId);
@@ -284,7 +311,7 @@ public class PageService : IPageService
     public async Task<PageDto> DuplicatePageAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var sourcePage = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, sourcePage.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
 
         var newRootPage = new Page
         {
@@ -317,7 +344,7 @@ public class PageService : IPageService
     public async Task<PageDto> ToggleFavoriteAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
 
         page.IsFavorite = !page.IsFavorite;
         page.LastEditedById = userId;
@@ -331,7 +358,7 @@ public class PageService : IPageService
     public async Task RecordOpenAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         page.LastOpenedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync(ct);
@@ -340,7 +367,7 @@ public class PageService : IPageService
     public async Task<string> GetPageContentAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         return page.Content;
     }
@@ -348,9 +375,25 @@ public class PageService : IPageService
     public async Task<PageDto> UpdatePageContentAsync(Guid userId, Guid pageId, UpdatePageContentRequest request, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
 
-        page.Content = request.Content ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(request.Content))
+            throw new ValidationException("Page content is required.");
+        if (Encoding.UTF8.GetByteCount(request.Content) > MaxContentBytes)
+            throw new ValidationException($"Page content cannot exceed {MaxContentBytes} bytes.");
+
+        try
+        {
+            using var document = JsonDocument.Parse(request.Content);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                throw new ValidationException("Page content must be a JSON object.");
+        }
+        catch (JsonException)
+        {
+            throw new ValidationException("Page content must contain valid JSON.");
+        }
+
+        page.Content = request.Content;
         page.LastEditedById = userId;
         page.UpdatedAt = DateTime.UtcNow;
 
@@ -372,7 +415,7 @@ public class PageService : IPageService
     public async Task<IEnumerable<PageVersionDto>> GetPageVersionsAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         var versions = await _dbContext.PageVersions
             .AsNoTracking()
@@ -394,7 +437,7 @@ public class PageService : IPageService
     public async Task<PageVersionDetailDto> GetPageVersionByIdAsync(Guid userId, Guid pageId, Guid versionId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         var version = await _dbContext.PageVersions
             .AsNoTracking()
@@ -415,7 +458,7 @@ public class PageService : IPageService
     public async Task<PageDto> RestorePageVersionAsync(Guid userId, Guid pageId, Guid versionId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
 
         var version = await _dbContext.PageVersions
             .AsNoTracking()
@@ -457,7 +500,7 @@ public class PageService : IPageService
     public async Task<PageDto> RemoveFavoriteAsync(Guid userId, Guid pageId, CancellationToken ct = default)
     {
         var page = await GetPageEntityAsync(pageId, ct);
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
 
         page.IsFavorite = false;
         page.LastEditedById = userId;
@@ -483,7 +526,7 @@ public class PageService : IPageService
 
     public async Task EmptyTrashAsync(Guid userId, Guid workspaceId, CancellationToken ct = default)
     {
-        await EnsureWorkspaceMemberAsync(userId, workspaceId, ct);
+        await _authorization.EnsureCanEmptyTrashAsync(userId, workspaceId, ct);
 
         var archivedPages = await _dbContext.Pages
             .Where(p => p.WorkspaceId == workspaceId && p.IsArchived)

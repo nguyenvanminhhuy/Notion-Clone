@@ -30,7 +30,7 @@ const INITIAL_MESSAGES: AIMessage[] = [
   {
     id: 'msg-welcome',
     role: 'assistant',
-    content: "👋 Hi! I'm your AI Assistant. How can I help you write, summarize, or edit your notes today?",
+    content: "👋 Hi! I'm the Demo AI Assistant. I use deterministic sample responses rather than a live model.",
     createdAt: new Date().toISOString(),
   },
 ];

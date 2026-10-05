@@ -98,7 +98,7 @@ export function AIAssistantPanel({ pageTitle, pageContentText, pageId }: AIAssis
           <div className="ai-badge-icon">
             <Sparkles size={16} />
           </div>
-          <span className="ai-title-text">Notion AI Assistant</span>
+          <span className="ai-title-text">Demo AI Assistant</span>
         </div>
         <div className="ai-panel-actions">
           <button

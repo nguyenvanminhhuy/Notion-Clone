@@ -184,6 +184,22 @@ public class AuthApiTests : IClassFixture<NotionCloneWebApplicationFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Logout_RevokesRefreshToken()
+    {
+        var client = CreateClient();
+        var email = $"logout_{Guid.NewGuid():N}@example.com";
+        var register = await client.PostAsJsonAsync("/api/auth/register",
+            new { email, password = "SecurePass123!", name = "Logout User" });
+        var tokens = await register.Content.ReadFromJsonAsync<TokenResponse>();
+
+        var logout = await client.PostAsJsonAsync("/api/auth/logout", new { refreshToken = tokens!.RefreshToken });
+        var refresh = await client.PostAsJsonAsync("/api/auth/refresh", new { refreshToken = tokens.RefreshToken });
+
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, refresh.StatusCode);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private record TokenResponse(string AccessToken, string RefreshToken, object User);

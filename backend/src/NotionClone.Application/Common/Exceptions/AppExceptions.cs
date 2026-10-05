@@ -23,6 +23,11 @@ public class ConflictException : Exception
     public ConflictException(string message) : base(message) { }
 }
 
+public class ExternalServiceException : Exception
+{
+    public ExternalServiceException(string message) : base(message) { }
+}
+
 public class ValidationException : Exception
 {
     public IDictionary<string, string[]> Errors { get; }

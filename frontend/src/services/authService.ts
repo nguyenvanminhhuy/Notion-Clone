@@ -62,7 +62,7 @@ export const authService = {
 
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
     const response = await httpClient.post<{ accessToken: string; refreshToken: string }>(
-      '/api/auth/refresh-token',
+      '/api/auth/refresh',
       { refreshToken },
       { skipAuth: true }
     );
@@ -70,7 +70,7 @@ export const authService = {
   },
 
   async revokeToken(refreshToken?: string): Promise<void> {
-    await httpClient.post('/api/auth/revoke-token', { refreshToken });
+    await httpClient.post('/api/auth/logout', { refreshToken }, { skipAuth: true });
   },
 
   async getMe(): Promise<User> {

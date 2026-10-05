@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IWorkspaceService, WorkspaceService>();
         services.AddScoped<IPageService, PageService>();
+        services.AddScoped<IPageAuthorizationService, PageAuthorizationService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IShareService, ShareService>();
@@ -63,4 +64,3 @@ public static class DependencyInjection
         return services;
     }
 }
-

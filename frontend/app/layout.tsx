@@ -3,14 +3,11 @@ import './globals.css';
 import { ThemeProvider, themeScript } from '../src/components/shared/ThemeProvider';
 import { QueryProvider } from '../src/components/shared/QueryProvider';
 import { ToastContainer } from '../src/components/shared/Toast';
-import { CommandPalette } from '../src/components/shared/CommandPalette';
-import { UploadDialog } from '../src/components/shared/UploadDialog';
-import { ShareDialog } from '../src/features/sharing/ShareDialog';
 
 export const metadata: Metadata = {
-  title: 'Notion Clone — AI-Powered Knowledge Workspace',
+  title: 'Notion Clone — Knowledge Workspace with Demo AI',
   description:
-    'A modern, AI-powered knowledge workspace. Organize your notes, projects, and ideas in one place.',
+    'A modern knowledge workspace with a clearly labeled deterministic Demo AI experience.',
   keywords: ['notion', 'notes', 'knowledge base', 'AI', 'productivity'],
   authors: [{ name: 'Notion Clone' }],
 };
@@ -32,9 +29,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ThemeProvider>
               {children}
               <ToastContainer />
-              <CommandPalette />
-              <UploadDialog />
-              <ShareDialog />
             </ThemeProvider>
           </QueryProvider>
         </ErrorBoundary>

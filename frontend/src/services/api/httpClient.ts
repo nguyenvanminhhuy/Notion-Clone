@@ -66,7 +66,7 @@ class HttpClient {
     if (!this.refreshPromise) {
       this.refreshPromise = (async () => {
         try {
-          const refreshUrl = this.buildUrl('/api/auth/refresh-token');
+          const refreshUrl = this.buildUrl('/api/auth/refresh');
           const response = await fetch(refreshUrl, {
             method: 'POST',
             headers: {

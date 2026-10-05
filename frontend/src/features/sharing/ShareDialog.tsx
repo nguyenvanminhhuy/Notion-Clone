@@ -12,7 +12,7 @@ import type { PageShare, PageRole } from '../../types/page';
 export function ShareDialog() {
   const { isShareOpen, setShareOpen } = useUIStore();
   const { addToast } = useToastStore();
-  const { selectedPageId, pages, updatePage } = usePageStore();
+  const { selectedPageId, pages, setPages } = usePageStore();
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<PageRole>('editor');
@@ -46,7 +46,7 @@ export function ShareDialog() {
 
   const handleCopyLink = () => {
     if (!selectedPageId) return;
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/page/${selectedPageId}` : '';
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/public/${selectedPageId}` : '';
     navigator.clipboard.writeText(url);
     setCopied(true);
     addToast({ message: 'Link copied to clipboard', type: 'success' });
@@ -74,8 +74,8 @@ export function ShareDialog() {
   const handleTogglePublic = async (isPublic: boolean) => {
     if (!selectedPageId) return;
     try {
-      await shareService.togglePublicAccess(selectedPageId, isPublic);
-      await updatePage(selectedPageId, { isPublic });
+      const updatedPage = await shareService.togglePublicAccess(selectedPageId, isPublic);
+      setPages(pages.map((current) => current.id === updatedPage.id ? updatedPage : current));
       addToast({
         message: isPublic ? 'Public web access enabled' : 'Public web access disabled',
         type: 'info',

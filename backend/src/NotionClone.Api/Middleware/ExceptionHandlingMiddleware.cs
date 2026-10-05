@@ -38,6 +38,7 @@ public class ExceptionHandlingMiddleware
             UnauthorizedException => (HttpStatusCode.Unauthorized, "Unauthorized", null),
             ForbiddenException => (HttpStatusCode.Forbidden, "Forbidden", null),
             ConflictException => (HttpStatusCode.Conflict, "Conflict", null),
+            ExternalServiceException => (HttpStatusCode.ServiceUnavailable, "External service unavailable", null),
             Application.Common.Exceptions.ValidationException ve => (HttpStatusCode.UnprocessableEntity, "Validation failed", ve.Errors),
             _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred.", null)
         };

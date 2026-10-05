@@ -10,21 +10,29 @@ namespace NotionClone.Infrastructure.Services;
 
 public class AiService : IAiService
 {
+    private const int MaxPromptLength = 4_000;
+    private const int MaxContextLength = 20_000;
+    private const int MaxOutputLength = 8_000;
+    private static readonly TimeSpan ProviderTimeout = TimeSpan.FromSeconds(30);
     private readonly NotionDbContext _dbContext;
     private readonly IAiEngine _aiEngine;
+    private readonly IPageAuthorizationService _authorization;
 
-    public AiService(NotionDbContext dbContext, IAiEngine aiEngine)
+    public AiService(NotionDbContext dbContext, IAiEngine aiEngine, IPageAuthorizationService? authorization = null)
     {
         _dbContext = dbContext;
         _aiEngine = aiEngine;
+        _authorization = authorization ?? new PageAuthorizationService(dbContext);
     }
 
     public async Task<AiGenerateResponse> GenerateAsync(Guid userId, AiGenerateRequest request, CancellationToken ct = default)
     {
+        ValidateInput(request.Prompt, nameof(request.Prompt));
+        var context = await ResolveAuthorizedContextAsync(userId, request.PageId, request.ContextText, ct);
         var action = string.IsNullOrWhiteSpace(request.ActionType) ? "custom" : request.ActionType;
-        var responseText = await _aiEngine.GenerateAsync(request.Prompt, request.ContextText, action, ct);
+        var responseText = await GenerateWithTimeoutAsync(request.Prompt, context, action, ct);
 
-        return new AiGenerateResponse(responseText, action);
+        return new AiGenerateResponse(LimitOutput(responseText), action);
     }
 
     public async Task<AIMessageDto> ChatAsync(Guid userId, AiChatRequest request, CancellationToken ct = default)
@@ -33,6 +41,7 @@ public class AiService : IAiService
         {
             throw new ValidationException("Message cannot be empty.");
         }
+        ValidateInput(request.Message, nameof(request.Message));
 
         AIConversation conversation;
         if (request.ConversationId.HasValue)
@@ -41,9 +50,14 @@ public class AiService : IAiService
                 .Include(c => c.Messages)
                 .FirstOrDefaultAsync(c => c.Id == request.ConversationId.Value && c.UserId == userId, ct)
                 ?? throw new NotFoundException($"Conversation with ID '{request.ConversationId.Value}' was not found.");
+
+            if (conversation.PageId.HasValue)
+                await _authorization.EnsurePagePermissionAsync(userId, conversation.PageId.Value, PagePermission.Read, ct);
         }
         else
         {
+            if (request.PageId.HasValue)
+                await _authorization.EnsurePagePermissionAsync(userId, request.PageId.Value, PagePermission.Read, ct);
             var title = request.Message.Length > 30 ? request.Message[..30] + "..." : request.Message;
             conversation = new AIConversation
             {
@@ -69,7 +83,9 @@ public class AiService : IAiService
         };
 
         var action = string.IsNullOrWhiteSpace(request.ActionType) ? "custom" : request.ActionType;
-        var responseText = await _aiEngine.GenerateAsync(request.Message, null, action, ct);
+        var pageId = conversation.PageId ?? request.PageId;
+        var context = await ResolveAuthorizedContextAsync(userId, pageId, null, ct);
+        var responseText = LimitOutput(await GenerateWithTimeoutAsync(request.Message, context, action, ct));
 
         var assistantMessage = new AIMessage
         {
@@ -91,6 +107,8 @@ public class AiService : IAiService
 
     public async Task<IEnumerable<AIConversationDto>> GetConversationsAsync(Guid userId, Guid? pageId = null, CancellationToken ct = default)
     {
+        if (pageId.HasValue)
+            await _authorization.EnsurePagePermissionAsync(userId, pageId.Value, PagePermission.Read, ct);
         var query = _dbContext.AIConversations
             .AsNoTracking()
             .Include(c => c.Messages)
@@ -116,11 +134,16 @@ public class AiService : IAiService
             .FirstOrDefaultAsync(c => c.Id == conversationId && c.UserId == userId, ct)
             ?? throw new NotFoundException($"Conversation with ID '{conversationId}' was not found.");
 
+        if (conversation.PageId.HasValue)
+            await _authorization.EnsurePagePermissionAsync(userId, conversation.PageId.Value, PagePermission.Read, ct);
+
         return MapToAIConversationDto(conversation);
     }
 
     public async Task<AIConversationDto> CreateConversationAsync(Guid userId, CreateConversationRequest request, CancellationToken ct = default)
     {
+        if (request.PageId.HasValue)
+            await _authorization.EnsurePagePermissionAsync(userId, request.PageId.Value, PagePermission.Read, ct);
         var conversation = new AIConversation
         {
             Id = Guid.NewGuid(),
@@ -167,4 +190,62 @@ public class AiService : IAiService
             c.CreatedAt,
             c.UpdatedAt
         );
+
+    private async Task<string?> ResolveAuthorizedContextAsync(
+        Guid userId,
+        Guid? pageId,
+        string? clientContext,
+        CancellationToken ct)
+    {
+        if (pageId.HasValue)
+        {
+            await _authorization.EnsurePagePermissionAsync(userId, pageId.Value, PagePermission.Read, ct);
+            var content = await _dbContext.Pages
+                .AsNoTracking()
+                .Where(page => page.Id == pageId.Value)
+                .Select(page => page.Content)
+                .SingleAsync(ct);
+            if (content.Length > MaxContextLength)
+                throw new ValidationException($"AI page context cannot exceed {MaxContextLength} characters.");
+            return content;
+        }
+
+        if (clientContext?.Length > MaxContextLength)
+            throw new ValidationException($"AI context cannot exceed {MaxContextLength} characters.");
+
+        return clientContext;
+    }
+
+    private async Task<string> GenerateWithTimeoutAsync(string prompt, string? context, string action, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(ProviderTimeout);
+        try
+        {
+            return await _aiEngine.GenerateAsync(prompt, context, action, timeout.Token);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new ExternalServiceException("The AI provider timed out.");
+        }
+        catch (ExternalServiceException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new ExternalServiceException($"The AI provider request failed: {ex.Message}");
+        }
+    }
+
+    private static void ValidateInput(string value, string field)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ValidationException(field, "AI input is required.");
+        if (value.Length > MaxPromptLength)
+            throw new ValidationException(field, $"AI input cannot exceed {MaxPromptLength} characters.");
+    }
+
+    private static string LimitOutput(string response) =>
+        response.Length <= MaxOutputLength ? response : response[..MaxOutputLength];
 }

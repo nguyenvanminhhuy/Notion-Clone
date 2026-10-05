@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using NotionClone.Application.DTOs.AI;
 using NotionClone.Application.Interfaces;
 
@@ -8,6 +9,7 @@ namespace NotionClone.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/ai")]
+[EnableRateLimiting("ai")]
 public class AiController : ApiControllerBase
 {
     private readonly IAiService _aiService;

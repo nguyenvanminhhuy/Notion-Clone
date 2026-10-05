@@ -10,14 +10,26 @@ namespace NotionClone.Infrastructure.Services;
 
 public class FileService : IFileService
 {
-    private const long MaxFileSizeBytes = 50 * 1024 * 1024; // 50MB
+    private const long MaxFileSizeBytes = 20 * 1024 * 1024;
+    private static readonly IReadOnlyDictionary<string, string> AllowedTypes =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [".png"] = "image/png",
+            [".jpg"] = "image/jpeg",
+            [".jpeg"] = "image/jpeg",
+            [".webp"] = "image/webp",
+            [".gif"] = "image/gif",
+            [".pdf"] = "application/pdf"
+        };
     private readonly NotionDbContext _dbContext;
     private readonly IFileStorageService _storageService;
+    private readonly IPageAuthorizationService _authorization;
 
-    public FileService(NotionDbContext dbContext, IFileStorageService storageService)
+    public FileService(NotionDbContext dbContext, IFileStorageService storageService, IPageAuthorizationService? authorization = null)
     {
         _dbContext = dbContext;
         _storageService = storageService;
+        _authorization = authorization ?? new PageAuthorizationService(dbContext);
     }
 
     public async Task<FileAttachmentDto> UploadFileAsync(
@@ -44,28 +56,39 @@ public class FileService : IFileService
             throw new ValidationException("File name is required.");
         }
 
+        var safeFileName = Path.GetFileName(fileName);
+        var extension = Path.GetExtension(safeFileName).ToLowerInvariant();
+        if (!AllowedTypes.TryGetValue(extension, out var expectedContentType))
+            throw new ValidationException("File type is not allowed. Use PNG, JPEG, WEBP, GIF, or PDF.");
+        if (!string.Equals(contentType, expectedContentType, StringComparison.OrdinalIgnoreCase))
+            throw new ValidationException("File MIME type does not match its extension.");
+        if (!await HasValidSignatureAsync(fileStream, expectedContentType, ct))
+            throw new ValidationException("File content does not match the declared file type.");
+
         var page = await _dbContext.Pages
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Edit, ct);
 
-        var (storageKey, url) = await _storageService.SaveFileAsync(fileStream, fileName, contentType, ct);
+        var (storageKey, _) = await _storageService.SaveFileAsync(fileStream, safeFileName, expectedContentType, ct);
 
         var attachment = new FileAttachment
         {
             Id = Guid.NewGuid(),
             PageId = pageId,
-            Name = Path.GetFileName(fileName),
+            Name = safeFileName,
             StorageKey = storageKey,
-            Url = url,
+            Url = string.Empty,
             SizeBytes = sizeBytes,
-            MimeType = string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType,
+            MimeType = expectedContentType,
             UploadedById = userId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+
+        attachment.Url = $"/api/files/{attachment.Id}/download";
 
         _dbContext.FileAttachments.Add(attachment);
         await _dbContext.SaveChangesAsync(ct);
@@ -85,7 +108,7 @@ public class FileService : IFileService
 
         if (!file.Page.IsPublic)
         {
-            await EnsureWorkspaceMemberAsync(userId, file.Page.WorkspaceId, ct);
+            await _authorization.EnsurePagePermissionAsync(userId, file.PageId, PagePermission.Read, ct);
         }
 
         var stream = await _storageService.GetFileAsync(file.StorageKey, ct)
@@ -104,7 +127,7 @@ public class FileService : IFileService
 
         if (!file.Page.IsPublic)
         {
-            await EnsureWorkspaceMemberAsync(userId, file.Page.WorkspaceId, ct);
+            await _authorization.EnsurePagePermissionAsync(userId, file.PageId, PagePermission.Read, ct);
         }
 
         return MapToFileAttachmentDto(file);
@@ -117,7 +140,7 @@ public class FileService : IFileService
             .FirstOrDefaultAsync(p => p.Id == pageId, ct)
             ?? throw new NotFoundException($"Page with ID '{pageId}' was not found.");
 
-        await EnsureWorkspaceMemberAsync(userId, page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, pageId, PagePermission.Read, ct);
 
         var files = await _dbContext.FileAttachments
             .AsNoTracking()
@@ -135,9 +158,10 @@ public class FileService : IFileService
             .FirstOrDefaultAsync(fa => fa.Id == fileId, ct)
             ?? throw new NotFoundException($"File with ID '{fileId}' was not found.");
 
-        var member = await EnsureWorkspaceMemberAsync(userId, file.Page.WorkspaceId, ct);
+        await _authorization.EnsurePagePermissionAsync(userId, file.PageId, PagePermission.Read, ct);
+        var canManage = await _authorization.HasPagePermissionAsync(userId, file.PageId, PagePermission.ManageSharing, ct);
 
-        if (file.UploadedById != userId && member.Role != UserRole.Owner && member.Role != UserRole.Admin)
+        if (file.UploadedById != userId && !canManage)
         {
             throw new ForbiddenException("You do not have permission to delete this file.");
         }
@@ -173,4 +197,24 @@ public class FileService : IFileService
             fa.UploadedById,
             fa.CreatedAt
         );
+
+    private static async Task<bool> HasValidSignatureAsync(Stream stream, string contentType, CancellationToken ct)
+    {
+        if (!stream.CanSeek) return false;
+
+        var originalPosition = stream.Position;
+        var header = new byte[12];
+        var bytesRead = await stream.ReadAsync(header.AsMemory(0, header.Length), ct);
+        stream.Position = originalPosition;
+
+        return contentType switch
+        {
+            "image/png" => bytesRead >= 8 && header[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }),
+            "image/jpeg" => bytesRead >= 3 && header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF,
+            "image/gif" => bytesRead >= 6 && (header[..6].SequenceEqual("GIF87a"u8.ToArray()) || header[..6].SequenceEqual("GIF89a"u8.ToArray())),
+            "image/webp" => bytesRead >= 12 && header[..4].SequenceEqual("RIFF"u8.ToArray()) && header[8..12].SequenceEqual("WEBP"u8.ToArray()),
+            "application/pdf" => bytesRead >= 5 && header[..5].SequenceEqual("%PDF-"u8.ToArray()),
+            _ => false
+        };
+    }
 }

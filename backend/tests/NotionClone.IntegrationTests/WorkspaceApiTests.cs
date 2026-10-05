@@ -183,5 +183,5 @@ public class WorkspaceApiTests : IClassFixture<NotionCloneWebApplicationFactory>
     // ─── Records ──────────────────────────────────────────────────────────────
 
     private record TokenResponse(string AccessToken, string RefreshToken, object User);
-    private record WorkspaceDto(Guid Id, string Name, string Slug, string? IconEmoji, string? IconUrl, int Plan, DateTime CreatedAt, DateTime UpdatedAt);
+    private record WorkspaceDto(Guid Id, string Name, string Slug, string? IconEmoji, string? IconUrl, string Plan, DateTime CreatedAt, DateTime UpdatedAt);
 }

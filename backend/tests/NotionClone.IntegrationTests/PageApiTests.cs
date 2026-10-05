@@ -209,6 +209,6 @@ public class PageApiTests : IClassFixture<NotionCloneWebApplicationFactory>
     // ─── Records ──────────────────────────────────────────────────────────────
 
     private record TokenResponse(string AccessToken, string RefreshToken, object User);
-    private record WorkspaceDto(Guid Id, string Name, string Slug, string? IconEmoji, string? IconUrl, int Plan, DateTime CreatedAt, DateTime UpdatedAt);
+    private record WorkspaceDto(Guid Id, string Name, string Slug, string? IconEmoji, string? IconUrl, string Plan, DateTime CreatedAt, DateTime UpdatedAt);
     private record PageDto(Guid Id, Guid WorkspaceId, Guid? ParentId, string Title, string? Icon, string? Cover, string Content, bool IsFavorite, bool IsArchived, bool IsPublic, Guid CreatedById, Guid LastEditedById, DateTime CreatedAt, DateTime UpdatedAt, DateTime? LastOpenedAt);
 }
