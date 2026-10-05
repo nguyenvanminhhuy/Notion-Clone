@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, MessageSquare, AtSign, Share2, Info, Check, CheckCheck } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
@@ -13,6 +13,11 @@ export function NotificationCenter() {
   const { notifications, loadNotifications, markAsRead, markAllAsRead, getUnreadCount } = useNotificationStore();
   const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     loadNotifications();
@@ -55,7 +60,7 @@ export function NotificationCenter() {
   };
 
   const formatTimeAgo = (isoString: string) => {
-    const diff = Date.now() - new Date(isoString).getTime();
+    const diff = now - new Date(isoString).getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
@@ -114,7 +119,7 @@ export function NotificationCenter() {
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {notifications.length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: '13px' }}>
-                You're all caught up!
+                You&apos;re all caught up!
               </div>
             ) : (
               notifications.map((notification) => (

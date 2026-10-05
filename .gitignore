@@ -1,0 +1,23 @@
+# Build outputs
+**/bin/
+**/obj/
+**/TestResults/
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+# Configuration (examples remain tracked)
+.env
+.env.*
+!.env.example
+!**/.env.example
+uploads/
+# Editors and OS
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+*.log

@@ -192,6 +192,10 @@ public class FileManagementTests
         var (_, contentType, fileName) = await service.DownloadFileAsync(Guid.Empty, file.Id);
         Assert.Equal("application/pdf", contentType);
         Assert.Equal("access.pdf", fileName);
+        page.IsArchived = true;
+        await db.SaveChangesAsync();
+        await Assert.ThrowsAsync<NotionClone.Application.Common.Exceptions.ForbiddenException>(() =>
+            service.DownloadFileAsync(Guid.Empty, file.Id));
     }
 
     [Fact]

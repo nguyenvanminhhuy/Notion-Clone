@@ -8,19 +8,16 @@ interface EditorSaveStatusProps {
 }
 
 export function EditorSaveStatus({ isSaving, lastSaved }: EditorSaveStatusProps) {
-  const [show, setShow] = useState(false);
+  const [hiddenSaved, setHiddenSaved] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (isSaving || lastSaved) {
-      setShow(true);
-      if (!isSaving) {
-        const timer = setTimeout(() => setShow(false), 2500);
-        return () => clearTimeout(timer);
-      }
+    if (!isSaving && lastSaved) {
+      const timer = setTimeout(() => setHiddenSaved(lastSaved), 2500);
+      return () => clearTimeout(timer);
     }
   }, [isSaving, lastSaved]);
 
-  if (!show) return null;
+  if (!isSaving && (!lastSaved || hiddenSaved === lastSaved)) return null;
 
   return (
     <span

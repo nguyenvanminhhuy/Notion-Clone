@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { buildEditorExtensions } from './editorExtensions';
 import { BubbleMenuBar } from './BubbleMenuBar';
 import { FloatingToolbar } from './FloatingToolbar';
+import { Autosave } from './autosave';
 
 interface EditorProps {
   initialContent: string;
@@ -14,9 +15,8 @@ interface EditorProps {
   placeholder?: string;
   editable?: boolean;
   pageId?: string | null;
+  onAutosaveReady?: (autosave: Autosave) => void;
 }
-
-const AUTOSAVE_DELAY_MS = 1000;
 
 export function Editor({
   initialContent,
@@ -25,26 +25,17 @@ export function Editor({
   onSaveError,
   editable = true,
   pageId,
+  onAutosaveReady,
 }: EditorProps) {
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingContentRef = useRef<string | null>(null);
+  const autosaveRef = useRef<Autosave | null>(null);
   const onSaveRef = useRef(onSave);
   const onSaveErrorRef = useRef(onSaveError);
+  const onSavingRef = useRef(onSavingStateChange);
 
   useEffect(() => {
     onSaveRef.current = onSave;
     onSaveErrorRef.current = onSaveError;
-  }, [onSave, onSaveError]);
-
-  const performSave = useCallback(async (contentJson: string) => {
-    onSavingStateChange?.(true);
-    try {
-      await onSave(contentJson);
-    } catch (error) {
-      onSaveError?.(error);
-    } finally {
-      onSavingStateChange?.(false);
-    }
+    onSavingRef.current = onSavingStateChange;
   }, [onSave, onSaveError, onSavingStateChange]);
 
   // Parse initial content safely
@@ -58,32 +49,16 @@ export function Editor({
     }
   };
 
-  const triggerSave = useCallback(
-    (contentJson: string) => {
-      // Clear any pending save
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-      pendingContentRef.current = contentJson;
-      onSavingStateChange?.(true);
-
-      saveTimerRef.current = setTimeout(async () => {
-        saveTimerRef.current = null;
-        pendingContentRef.current = null;
-        await performSave(contentJson);
-      }, AUTOSAVE_DELAY_MS);
-    },
-    [onSavingStateChange, performSave]
-  );
-
-  useEffect(() => () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    const pendingContent = pendingContentRef.current;
-    pendingContentRef.current = null;
-    if (pendingContent) {
-      void onSaveRef.current(pendingContent).catch((error) => onSaveErrorRef.current?.(error));
-    }
-  }, []);
+  useEffect(() => {
+    const autosave = new Autosave(
+      (content) => onSaveRef.current(content),
+      (saving) => onSavingRef.current?.(saving),
+      (error) => onSaveErrorRef.current?.(error),
+    );
+    autosaveRef.current = autosave;
+    onAutosaveReady?.(autosave);
+    return () => { void autosave.dispose(); };
+  }, [onAutosaveReady]);
 
   const editor = useEditor({
     extensions: buildEditorExtensions(),
@@ -97,7 +72,7 @@ export function Editor({
     },
     onUpdate: ({ editor: ed }) => {
       const json = JSON.stringify(ed.getJSON());
-      triggerSave(json);
+      if (editable) autosaveRef.current?.schedule(json);
     },
     immediatelyRender: false,
   });

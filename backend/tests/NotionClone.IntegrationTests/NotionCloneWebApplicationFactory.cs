@@ -16,6 +16,9 @@ public class NotionCloneWebApplicationFactory : WebApplicationFactory<Program>
 {
     // Each factory instance gets its own unique DB name so test classes don't share state
     private readonly string _dbName = $"NotionCloneTestDb_{Guid.NewGuid():N}";
+    private readonly int _authLimit;
+    public NotionCloneWebApplicationFactory() : this(1000) { }
+    internal NotionCloneWebApplicationFactory(int authLimit) { _authLimit = authLimit; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -32,6 +35,7 @@ public class NotionCloneWebApplicationFactory : WebApplicationFactory<Program>
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Jwt:Secret"] = "IntegrationTestSecretKey_AtLeast32CharsLongEnough!!",
+                ["RateLimits:AuthPermits"] = _authLimit.ToString(),
                 ["Jwt:Issuer"] = "NotionClone",
                 ["Jwt:Audience"] = "NotionCloneUsers",
                 ["Jwt:AccessTokenExpiryMinutes"] = "60",

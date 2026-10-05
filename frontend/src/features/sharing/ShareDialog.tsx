@@ -18,19 +18,16 @@ export function ShareDialog() {
   const [inviteRole, setInviteRole] = useState<PageRole>('editor');
   const [copied, setCopied] = useState(false);
   const [shares, setShares] = useState<PageShare[]>([]);
-  const [isLoadingShares, setIsLoadingShares] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const page = pages.find((p) => p.id === selectedPageId);
 
   useEffect(() => {
     if (isShareOpen && selectedPageId) {
-      setIsLoadingShares(true);
       shareService
         .getPageShares(selectedPageId)
         .then(setShares)
-        .catch((err) => console.error('Failed to load page shares:', err))
-        .finally(() => setIsLoadingShares(false));
+        .catch((err) => console.error('Failed to load page shares:', err));
     }
   }, [isShareOpen, selectedPageId]);
 

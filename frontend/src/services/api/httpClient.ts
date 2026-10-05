@@ -14,13 +14,15 @@ export type TokenProvider = {
   onUnauthorized?: () => void;
 };
 
-class HttpClient {
+export class HttpClient {
   private baseUrl: string;
   private tokenProvider: TokenProvider | null = null;
   private refreshPromise: Promise<string | null> | null = null;
 
   constructor(baseUrl?: string) {
-    const rawUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const rawUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+    if (!rawUrl) throw new Error('NEXT_PUBLIC_API_URL is required for production builds.');
     // Remove trailing slash if present
     this.baseUrl = rawUrl.replace(/\/+$/, '');
   }
@@ -33,7 +35,7 @@ class HttpClient {
     return this.tokenProvider;
   }
 
-  private buildUrl(path: string, params?: Record<string, string | number | boolean | undefined | null>): string {
+  public buildUrl(path: string, params?: Record<string, string | number | boolean | undefined | null>): string {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     // If baseUrl already ends with /api and cleanPath starts with /api, normalize it
     const fullPath = this.baseUrl.endsWith('/api') && cleanPath.startsWith('/api')

@@ -40,9 +40,26 @@ export function CommandPalette() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
+  const [previousQuery, setPreviousQuery] = useState(query);
+  const [previousOpen, setPreviousOpen] = useState(isSearchOpen);
+  if (previousOpen !== isSearchOpen) {
+    setPreviousOpen(isSearchOpen);
+    if (isSearchOpen) { setQuery(''); setSearchResults([]); setSelectedIdx(0); }
+  }
+  if (previousQuery !== query) {
+    setPreviousQuery(query);
+    setIsSearching(Boolean(query.trim()));
+    if (!query.trim()) setSearchResults([]);
+  }
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => {
+    setSearchOpen(false);
+    setQuery('');
+    setSearchResults([]);
+    setSelectedIdx(0);
+  }, [setSearchOpen]);
 
   // ── Commands ─────────────────────────────────────────────────────────────
   const commands = useMemo<CommandItem[]>(() => [
@@ -78,14 +95,7 @@ export function CommandPalette() {
       icon: <Sparkles size={15} style={{ color: 'var(--color-accent)' }} />,
       action: () => { useUIStore.getState().setAIPanelOpen(true); close(); },
     },
-  ], [theme, currentWorkspaceId]);
-
-  const close = useCallback(() => {
-    setSearchOpen(false);
-    setQuery('');
-    setSearchResults([]);
-    setSelectedIdx(0);
-  }, [setSearchOpen]);
+  ], [theme, currentWorkspaceId, router, close, createPage, setTheme]);
 
   // ── Filtered command list ─────────────────────────────────────────────────
   const filteredCommands = useMemo(() => {
@@ -99,6 +109,13 @@ export function CommandPalette() {
     ...searchResults.map<ListItem>((r) => ({ kind: 'page', result: r })),
     ...filteredCommands,
   ], [searchResults, filteredCommands]);
+
+  const executeItem = React.useCallback((item: ListItem | undefined) => {
+    if (!item) return;
+    if (item.kind === 'command') { item.action(); return; }
+    router.push(`/page/${item.result.page.id}`);
+    close();
+  }, [router, close]);
 
   // ── Global Cmd/Ctrl+K ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -130,12 +147,11 @@ export function CommandPalette() {
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [isSearchOpen, allItems, selectedIdx, close]);
+  }, [isSearchOpen, allItems, selectedIdx, close, executeItem]);
 
   // ── Debounced search ──────────────────────────────────────────────────────
   useEffect(() => {
-    if (!query.trim()) { setSearchResults([]); return; }
-    setIsSearching(true);
+    if (!query.trim()) return;
     const t = setTimeout(() => {
       searchService.searchPages(query, currentWorkspaceId, pages).then((r) => {
         setSearchResults(r.slice(0, 8));
@@ -149,7 +165,6 @@ export function CommandPalette() {
   // ── Focus & reset on open ─────────────────────────────────────────────────
   useEffect(() => {
     if (isSearchOpen) {
-      setQuery(''); setSearchResults([]); setSelectedIdx(0);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isSearchOpen]);
@@ -159,13 +174,6 @@ export function CommandPalette() {
     const el = listRef.current?.querySelector<HTMLElement>('[data-selected="true"]');
     el?.scrollIntoView({ block: 'nearest' });
   }, [selectedIdx]);
-
-  const executeItem = (item: ListItem | undefined) => {
-    if (!item) return;
-    if (item.kind === 'command') { item.action(); return; }
-    router.push(`/page/${item.result.page.id}`);
-    close();
-  };
 
   const recentPages = useMemo(() => {
     if (query.trim()) return [];
@@ -252,7 +260,7 @@ export function CommandPalette() {
 
               {/* No results */}
               {query.trim() && searchResults.length === 0 && !isSearching && (
-                <div className="cp-no-results">No pages matching "{query}"</div>
+                <div className="cp-no-results">No pages matching &quot;{query}&quot;</div>
               )}
 
               {/* Commands */}

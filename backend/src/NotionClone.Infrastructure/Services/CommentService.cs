@@ -81,6 +81,11 @@ public class CommentService : ICommentService
         };
 
         _dbContext.Comments.Add(comment);
+        var recipientId = request.ParentId.HasValue
+            ? await _dbContext.Comments.Where(c => c.Id == request.ParentId.Value).Select(c => c.UserId).SingleAsync(ct)
+            : page.CreatedById;
+        await EventNotifications.CommentAsync(_dbContext, _authorization, userId, recipientId,
+            pageId, request.ParentId.HasValue, ct);
         await _dbContext.SaveChangesAsync(ct);
 
         return new CommentDto(
@@ -128,6 +133,8 @@ public class CommentService : ICommentService
         };
 
         _dbContext.Comments.Add(reply);
+        await EventNotifications.CommentAsync(_dbContext, _authorization, userId, parentComment.UserId,
+            parentComment.PageId, true, ct);
         await _dbContext.SaveChangesAsync(ct);
 
         return new CommentReplyDto(

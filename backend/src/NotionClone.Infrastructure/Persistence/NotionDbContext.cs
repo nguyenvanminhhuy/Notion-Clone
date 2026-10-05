@@ -195,6 +195,7 @@ public class NotionDbContext : DbContext
         // RefreshToken Entity
         modelBuilder.Entity<RefreshToken>(builder =>
         {
+            builder.Property(rt => rt.IsRevoked).IsConcurrencyToken();
             builder.HasIndex(rt => rt.Token).IsUnique();
             builder.HasIndex(rt => rt.UserId);
 

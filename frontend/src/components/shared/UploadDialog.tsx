@@ -30,7 +30,9 @@ export function UploadDialog() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when opening
-  useEffect(() => {
+  const [previousOpen, setPreviousOpen] = useState(isUploadOpen);
+  if (previousOpen !== isUploadOpen) {
+    setPreviousOpen(isUploadOpen);
     if (isUploadOpen) {
       setUploadState('idle');
       setUploadProgress(0);
@@ -38,7 +40,7 @@ export function UploadDialog() {
       setSelectedFile(null);
       setIsDragging(false);
     }
-  }, [isUploadOpen]);
+  }
 
   // Esc to close (only when not uploading)
   useEffect(() => {

@@ -171,6 +171,19 @@ export function FloatingToolbar({ editor, pageId }: FloatingToolbarProps) {
     startPos: 0,
   });
   const menuRef = useRef<HTMLDivElement>(null);
+  const { isOpen, startPos, query } = menu;
+  const closeMenu = useCallback((deleteSlash = true) => {
+    if (deleteSlash && isOpen) {
+      editor.chain().focus().deleteRange({ from: startPos - query.length - 1, to: startPos }).run();
+    }
+    setMenu((previous) => ({ ...previous, isOpen: false, query: '' }));
+  }, [editor, isOpen, startPos, query]);
+  const executeCommand = useCallback((command: SlashCommand | undefined) => {
+    if (!command) return;
+    editor.chain().focus().deleteRange({ from: startPos - query.length - 1, to: startPos }).run();
+    command.action(editor, pageId);
+    setMenu((previous) => ({ ...previous, isOpen: false, query: '' }));
+  }, [editor, startPos, query, pageId]);
 
   const filteredCommands = SLASH_COMMANDS.filter((cmd) => {
     if (!menu.query) return true;
@@ -209,7 +222,7 @@ export function FloatingToolbar({ editor, pageId }: FloatingToolbarProps) {
 
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [menu.isOpen, menu.selectedIndex, filteredCommands]);
+  }, [menu.isOpen, menu.selectedIndex, filteredCommands, closeMenu, executeCommand]);
 
   // Subscribe to editor updates
   useEffect(() => {
@@ -256,7 +269,7 @@ export function FloatingToolbar({ editor, pageId }: FloatingToolbarProps) {
     return () => {
       editor.off('update', handleUpdate);
     };
-  }, [editor, menu.isOpen]);
+  }, [editor, menu.isOpen, closeMenu]);
 
   // Close if click outside
   useEffect(() => {
@@ -269,37 +282,7 @@ export function FloatingToolbar({ editor, pageId }: FloatingToolbarProps) {
       document.addEventListener('mousedown', handleMouseDown);
       return () => document.removeEventListener('mousedown', handleMouseDown);
     }
-  }, [menu.isOpen]);
-
-  const closeMenu = useCallback(
-    (deleteSlash = true) => {
-      if (deleteSlash && menu.isOpen) {
-        // Delete the slash character
-        const { startPos } = menu;
-        const slashStartPos = startPos - (menu.query.length + 1);
-        editor
-          .chain()
-          .focus()
-          .deleteRange({ from: slashStartPos, to: startPos })
-          .run();
-      }
-      setMenu((prev) => ({ ...prev, isOpen: false, query: '' }));
-    },
-    [editor, menu]
-  );
-
-  const executeCommand = useCallback(
-    (command: SlashCommand | undefined) => {
-      if (!command) return;
-      // Delete slash + query text before inserting block
-      const { startPos, query } = menu;
-      const deleteFrom = startPos - query.length - 1; // -1 for the slash
-      editor.chain().focus().deleteRange({ from: deleteFrom, to: startPos }).run();
-      command.action(editor, pageId);
-      setMenu((prev) => ({ ...prev, isOpen: false, query: '' }));
-    },
-    [editor, menu, pageId]
-  );
+  }, [menu.isOpen, closeMenu]);
 
   if (!menu.isOpen || filteredCommands.length === 0) return null;
 

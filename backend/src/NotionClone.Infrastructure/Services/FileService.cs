@@ -106,7 +106,7 @@ public class FileService : IFileService
             .FirstOrDefaultAsync(fa => fa.Id == fileId, ct)
             ?? throw new NotFoundException($"File with ID '{fileId}' was not found.");
 
-        if (!file.Page.IsPublic)
+        if (!file.Page.IsPublic || file.Page.IsArchived)
         {
             await _authorization.EnsurePagePermissionAsync(userId, file.PageId, PagePermission.Read, ct);
         }
@@ -125,7 +125,7 @@ public class FileService : IFileService
             .FirstOrDefaultAsync(fa => fa.Id == fileId, ct)
             ?? throw new NotFoundException($"File with ID '{fileId}' was not found.");
 
-        if (!file.Page.IsPublic)
+        if (!file.Page.IsPublic || file.Page.IsArchived)
         {
             await _authorization.EnsurePagePermissionAsync(userId, file.PageId, PagePermission.Read, ct);
         }

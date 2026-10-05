@@ -49,9 +49,7 @@ export const fileService = {
     if (onProgress) {
       return new Promise<FileAttachment>((resolve, reject) => {
         const tokenProvider = httpClient.getTokenProvider();
-        const baseUrl =
-          (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
-        const url = `${baseUrl}/api/files`;
+        const url = httpClient.buildUrl('/api/files');
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', url);
@@ -132,11 +130,7 @@ export const fileService = {
    * GET /api/files/{id}/download  (AllowAnonymous on backend)
    */
   getDownloadUrl(fileId: string): string {
-    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(
-      /\/+$/,
-      ''
-    );
-    return `${baseUrl}/api/files/${fileId}/download`;
+    return httpClient.buildUrl(`/api/files/${fileId}/download`);
   },
 
   /**

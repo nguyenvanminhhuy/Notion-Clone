@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using NotionClone.Application.Common.Exceptions;
 using NotionClone.Application.DTOs.Auth;
@@ -58,9 +60,10 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RefreshTokenAsync(string refreshToken, CancellationToken ct = default)
     {
+        var tokenHash = HashToken(refreshToken);
         var storedToken = await _context.RefreshTokens
             .Include(rt => rt.User)
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken, ct);
+            .FirstOrDefaultAsync(rt => rt.Token == tokenHash, ct);
 
         if (storedToken is null || !storedToken.IsActive)
             throw new UnauthorizedException("Invalid or expired refresh token.");
@@ -69,23 +72,32 @@ public class AuthService : IAuthService
         storedToken.IsRevoked = true;
         storedToken.UpdatedAt = DateTime.UtcNow;
 
-        var response = await GenerateAuthResponseAsync(storedToken.User, ct);
-        storedToken.ReplacedByToken = response.RefreshToken;
+        var response = await GenerateAuthResponseAsync(storedToken.User, ct, saveChanges: false);
+        storedToken.ReplacedByToken = HashToken(response.RefreshToken);
 
-        await _context.SaveChangesAsync(ct);
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new UnauthorizedException("Refresh token has already been used.");
+        }
         return response;
     }
 
     public async Task LogoutAsync(string refreshToken, CancellationToken ct = default)
     {
+        var tokenHash = HashToken(refreshToken);
         var storedToken = await _context.RefreshTokens
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken, ct);
+            .FirstOrDefaultAsync(rt => rt.Token == tokenHash, ct);
 
         if (storedToken is not null && storedToken.IsActive)
         {
             storedToken.IsRevoked = true;
             storedToken.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync(ct);
+            try { await _context.SaveChangesAsync(ct); }
+            catch (DbUpdateConcurrencyException) { /* Another request already revoked this session. */ }
         }
     }
 
@@ -97,7 +109,7 @@ public class AuthService : IAuthService
         return MapToUserDto(user);
     }
 
-    private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken ct)
+    private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken ct, bool saveChanges = true)
     {
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshTokenValue = _jwtService.GenerateRefreshToken();
@@ -105,18 +117,25 @@ public class AuthService : IAuthService
         var refreshToken = new RefreshToken
         {
             UserId = user.Id,
-            Token = refreshTokenValue,
+            Token = HashToken(refreshTokenValue),
             ExpiresAt = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays)
         };
 
         _context.RefreshTokens.Add(refreshToken);
-        await _context.SaveChangesAsync(ct);
+        if (saveChanges) await _context.SaveChangesAsync(ct);
 
         return new AuthResponse(
             User: MapToUserDto(user),
             AccessToken: accessToken,
             RefreshToken: refreshTokenValue,
             ExpiresAt: refreshToken.ExpiresAt);
+    }
+
+    private static string HashToken(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token) || token.Length > 512)
+            throw new UnauthorizedException("Invalid refresh token.");
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     }
 
     private static UserDto MapToUserDto(User user) => new(

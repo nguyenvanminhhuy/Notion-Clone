@@ -34,9 +34,11 @@ function PageTreeItemComponent({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Sync titleValue when page.title updates
-  useEffect(() => {
+  const [previousTitle, setPreviousTitle] = useState(page.title);
+  if (previousTitle !== page.title) {
+    setPreviousTitle(page.title);
     setTitleValue(page.title);
-  }, [page.title]);
+  }
 
   // Focus input when renaming starts
   useEffect(() => {

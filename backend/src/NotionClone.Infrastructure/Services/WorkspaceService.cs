@@ -169,6 +169,8 @@ public class WorkspaceService : IWorkspaceService
         };
 
         _dbContext.WorkspaceMembers.Add(newMember);
+        EventNotifications.Add(_dbContext, userId, targetUser.Id, NotificationType.System,
+            "Workspace invitation", "You have been added to a workspace.", "/");
         await _dbContext.SaveChangesAsync(ct);
 
         return new WorkspaceMemberDto(

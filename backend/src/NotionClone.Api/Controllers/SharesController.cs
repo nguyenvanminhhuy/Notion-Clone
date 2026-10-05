@@ -64,7 +64,7 @@ public class SharesController : ApiControllerBase
 
     /// <summary>Toggle public web access for a page.</summary>
     [HttpPost("api/pages/{pageId:guid}/public")]
-    [ProducesResponseType(typeof(PublicPageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> TogglePublicAccess(Guid pageId, [FromBody] TogglePublicAccessRequest request, CancellationToken ct)
@@ -76,7 +76,7 @@ public class SharesController : ApiControllerBase
     /// <summary>Get public page content (anonymous access).</summary>
     [AllowAnonymous]
     [HttpGet("api/public/pages/{pageId:guid}")]
-    [ProducesResponseType(typeof(PageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PublicPageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPublicPage(Guid pageId, CancellationToken ct)
     {

@@ -12,19 +12,25 @@ interface PageHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRestored?: (page: Page) => void;
+  onBeforeRestore?: () => Promise<void>;
 }
 
-export function PageHistoryModal({ page, isOpen, onClose, onRestored }: PageHistoryModalProps) {
+export function PageHistoryModal({ page, isOpen, onClose, onRestored, onBeforeRestore }: PageHistoryModalProps) {
   const [versions, setVersions] = useState<PageVersion[]>([]);
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
   const [versionDetail, setVersionDetail] = useState<PageVersion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const { addToast } = useToastStore();
+  const loadKey = `${isOpen}:${page.id}`;
+  const [previousLoadKey, setPreviousLoadKey] = useState(loadKey);
+  if (previousLoadKey !== loadKey) {
+    setPreviousLoadKey(loadKey);
+    setIsLoading(isOpen);
+  }
 
   useEffect(() => {
     if (isOpen && page.id) {
-      setIsLoading(true);
       pageService
         .getPageVersions(page.id)
         .then((list) => {
@@ -54,6 +60,7 @@ export function PageHistoryModal({ page, isOpen, onClose, onRestored }: PageHist
     if (!selectedVersionId || !page.id) return;
     setIsRestoring(true);
     try {
+      await onBeforeRestore?.();
       const restored = await pageService.restorePageVersion(page.id, selectedVersionId);
       addToast({ message: 'Version restored successfully', type: 'success' });
       onRestored?.(restored);

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, useRef, lazy, Suspense } from 'react';
+import type { Autosave } from '../editor/autosave';
 import { usePageStore } from '../../stores/pageStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useAIStore } from '../../stores/aiStore';
@@ -42,12 +43,24 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
   const { pages, updatePageContent, toggleFavorite, selectPage } = usePageStore();
   const { isCommentsOpen, toggleComments, setShareOpen } = useUIStore();
   const { isPanelOpen: isAIPanelOpen, togglePanel: toggleAIPanel } = useAIStore();
-  const [currentPage, setCurrentPage] = useState<Page | null>(null);
+  const [fetchedPage, setCurrentPage] = useState<Page | null>(null);
+  const currentPage = pages.find((page) => page.id === pageId) ?? fetchedPage;
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<ReturnType<typeof classifyError> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [editorRevision, setEditorRevision] = useState(0);
+  const autosaveRef = useRef<Autosave | null>(null);
+  const onAutosaveReady = useCallback((autosave: Autosave) => { autosaveRef.current = autosave; }, []);
+  const [previousPageId, setPreviousPageId] = useState(pageId);
+  if (previousPageId !== pageId) {
+    setPreviousPageId(pageId);
+    setIsLoading(true);
+    setCurrentPage(null);
+    setLoadError(null);
+    setLastSaved(null);
+  }
 
 
   // Mark this page as selected in the store (highlights it in the sidebar)
@@ -57,29 +70,25 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
 
   // Fetch current page from service
   useEffect(() => {
-    setIsLoading(true);
-    setCurrentPage(null);
-    setLoadError(null);
+    let cancelled = false;
     pageService
       .getPage(pageId)
       .then((page) => {
+        if (cancelled) return;
         setCurrentPage(page);
+        if (page) usePageStore.setState((state) => ({ pages: state.pages.map((cached) => cached.id === page.id ? page : cached) }));
         setIsLoading(false);
       })
       .catch((err) => {
+        if (cancelled) return;
         logError('PageView.loadPage', err);
         setLoadError(classifyError(err));
         setIsLoading(false);
       });
+    return () => { cancelled = true; };
   }, [pageId]);
 
   // Sync local state when the page updates in the store (e.g. title rename)
-  useEffect(() => {
-    const updated = pages.find((p) => p.id === pageId);
-    if (updated) {
-      setCurrentPage(updated);
-    }
-  }, [pages, pageId]);
 
   const handleSaveContent = useCallback(
     async (content: string) => {
@@ -231,11 +240,15 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
             }
           >
             <Editor
-              key={currentPage.id}
+              key={`${currentPage.id}:${editorRevision}`}
               initialContent={currentPage.content}
               onSave={handleSaveContent}
-              onSavingStateChange={setIsSaving}
+              onSavingStateChange={(saving) => {
+                setIsSaving(saving);
+                if (saving) setLastSaved(null);
+              }}
               pageId={currentPage.id}
+              onAutosaveReady={onAutosaveReady}
             />
           </Suspense>
         </div>
@@ -259,7 +272,13 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
         page={currentPage}
         isOpen={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        onRestored={(restored) => setCurrentPage(restored)}
+        onBeforeRestore={async () => { await autosaveRef.current?.settle(); }}
+        onRestored={(restored) => {
+          setCurrentPage(restored);
+          usePageStore.setState((state) => ({ pages: state.pages.map((page) => page.id === restored.id ? restored : page) }));
+          setEditorRevision((revision) => revision + 1);
+          setLastSaved(new Date());
+        }}
       />
 
       {/* ── Share Dialog ─────────────────────────────────────────────────── */}

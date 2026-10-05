@@ -125,7 +125,7 @@ export function AIAssistantPanel({ pageTitle, pageContentText, pageId }: AIAssis
         <div className="ai-context-banner">
           <div className="ai-context-info">
             <span className="ai-context-label">Selected Context:</span>
-            <span className="ai-context-snippet">"{selectedTextContext.slice(0, 70)}..."</span>
+            <span className="ai-context-snippet">&quot;{selectedTextContext.slice(0, 70)}...&quot;</span>
           </div>
           <button
             className="ai-context-clear"

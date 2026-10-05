@@ -30,9 +30,11 @@ export function PageHeader({ page }: PageHeaderProps) {
   const emojiRef = useRef<HTMLDivElement>(null);
   const coverRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const [previousTitle, setPreviousTitle] = useState(page.title);
+  if (previousTitle !== page.title) {
+    setPreviousTitle(page.title);
     setTitle(page.title);
-  }, [page.title]);
+  }
 
   // Click outside listener for pickers
   useEffect(() => {

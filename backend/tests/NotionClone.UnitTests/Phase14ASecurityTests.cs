@@ -61,11 +61,14 @@ public class Phase14ASecurityTests
         await Assert.ThrowsAsync<ForbiddenException>(() => pages.PermanentDeletePageAsync(users.memberId, users.pageId));
         await Assert.ThrowsAsync<ForbiddenException>(() => shares.TogglePublicAccessAsync(users.memberId, users.pageId, new TogglePublicAccessRequest(true)));
         await Assert.ThrowsAsync<ForbiddenException>(() => pages.UpdatePageContentAsync(users.guestId, users.pageId, new UpdatePageContentRequest("{\"type\":\"doc\"}")));
+        await Assert.ThrowsAsync<ForbiddenException>(() => pages.PermanentDeletePageAsync(users.guestId, users.pageId));
         await pages.GetPageByIdAsync(users.viewerId, users.pageId);
         await Assert.ThrowsAsync<ForbiddenException>(() => pages.UpdatePageContentAsync(users.viewerId, users.pageId, new UpdatePageContentRequest("{\"type\":\"doc\"}")));
+        await Assert.ThrowsAsync<ForbiddenException>(() => pages.PermanentDeletePageAsync(users.viewerId, users.pageId));
         await pages.UpdatePageContentAsync(users.editorId, users.pageId, new UpdatePageContentRequest("{\"type\":\"doc\",\"content\":[]}"));
         await Assert.ThrowsAsync<ForbiddenException>(() => shares.SharePageAsync(users.editorId, users.pageId, new CreateShareRequest("new@example.com", PageRole.Viewer)));
         await Assert.ThrowsAsync<ForbiddenException>(() => pages.GetPageByIdAsync(users.unrelatedId, users.pageId));
+        await Assert.ThrowsAsync<ForbiddenException>(() => pages.UpdatePageContentAsync(users.unrelatedId, users.pageId, new UpdatePageContentRequest("{}")));
     }
 
     [Fact]
@@ -137,6 +140,23 @@ public class Phase14ASecurityTests
         Email = $"{prefix}-{Guid.NewGuid():N}@example.com",
         Name = prefix
     };
+
+    [Fact]
+    public async Task AiTimeout_DoesNotDependOnProviderCooperation_AndCancellationIsPreserved()
+    {
+        await using var db = CreateDb();
+        var ai = new AiService(db, new HangingEngine(), providerTimeout: TimeSpan.FromMilliseconds(30));
+        await Assert.ThrowsAsync<ExternalServiceException>(() => ai.GenerateAsync(Guid.NewGuid(), new AiGenerateRequest("test", null, "custom", null)));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ai.GenerateAsync(Guid.NewGuid(), new AiGenerateRequest("test", null, "custom", null), cancellation.Token));
+    }
+
+    private sealed class HangingEngine : NotionClone.Application.Interfaces.IAiEngine
+    {
+        public Task<string> GenerateAsync(string prompt, string? contextText, string actionType, CancellationToken ct = default) =>
+            new TaskCompletionSource<string>().Task;
+    }
 
     private sealed class CapturingAiEngine(string? response = null) : NotionClone.Application.Interfaces.IAiEngine
     {

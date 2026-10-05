@@ -13,16 +13,17 @@ public class AiService : IAiService
     private const int MaxPromptLength = 4_000;
     private const int MaxContextLength = 20_000;
     private const int MaxOutputLength = 8_000;
-    private static readonly TimeSpan ProviderTimeout = TimeSpan.FromSeconds(30);
+    private readonly TimeSpan _providerTimeout;
     private readonly NotionDbContext _dbContext;
     private readonly IAiEngine _aiEngine;
     private readonly IPageAuthorizationService _authorization;
 
-    public AiService(NotionDbContext dbContext, IAiEngine aiEngine, IPageAuthorizationService? authorization = null)
+    public AiService(NotionDbContext dbContext, IAiEngine aiEngine, IPageAuthorizationService? authorization = null, TimeSpan? providerTimeout = null)
     {
         _dbContext = dbContext;
         _aiEngine = aiEngine;
         _authorization = authorization ?? new PageAuthorizationService(dbContext);
+        _providerTimeout = providerTimeout ?? TimeSpan.FromSeconds(30);
     }
 
     public async Task<AiGenerateResponse> GenerateAsync(Guid userId, AiGenerateRequest request, CancellationToken ct = default)
@@ -53,6 +54,8 @@ public class AiService : IAiService
 
             if (conversation.PageId.HasValue)
                 await _authorization.EnsurePagePermissionAsync(userId, conversation.PageId.Value, PagePermission.Read, ct);
+            if (conversation.Messages.Count >= 100)
+                throw new ValidationException("AI conversations are limited to 100 messages. Start a new conversation.");
         }
         else
         {
@@ -219,10 +222,14 @@ public class AiService : IAiService
     private async Task<string> GenerateWithTimeoutAsync(string prompt, string? context, string action, CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(ProviderTimeout);
+        timeout.CancelAfter(_providerTimeout);
         try
         {
-            return await _aiEngine.GenerateAsync(prompt, context, action, timeout.Token);
+            var response = await _aiEngine.GenerateAsync(prompt, context, action, timeout.Token)
+                .WaitAsync(timeout.Token);
+            if (string.IsNullOrWhiteSpace(response))
+                throw new ExternalServiceException("The AI provider returned an empty response.");
+            return response;
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
@@ -232,9 +239,10 @@ public class AiService : IAiService
         {
             throw;
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception)
         {
-            throw new ExternalServiceException($"The AI provider request failed: {ex.Message}");
+            throw new ExternalServiceException("The AI provider request failed.");
         }
     }
 

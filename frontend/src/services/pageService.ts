@@ -54,6 +54,10 @@ function mapPage(dto: PageDto): Page {
 }
 
 export const pageService = {
+  async getTrash(workspaceId: string): Promise<Page[]> {
+    const list = await httpClient.get<PageDto[]>('/api/trash', { params: { workspaceId } });
+    return list.map(mapPage);
+  },
   async getPages(workspaceId: string): Promise<Page[]> {
     const list = await httpClient.get<PageDto[]>(`/api/workspaces/${workspaceId}/pages`);
     return list.map(mapPage);

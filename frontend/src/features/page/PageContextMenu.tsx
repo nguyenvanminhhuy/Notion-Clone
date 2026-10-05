@@ -43,7 +43,7 @@ export function PageContextMenu({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [onClose]);
 
-  const handleAction = async (action: () => Promise<any> | void) => {
+  const handleAction = async (action: () => Promise<unknown> | void) => {
     await action();
     onClose();
   };

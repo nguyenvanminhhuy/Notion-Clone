@@ -31,8 +31,8 @@ export const usePageStore = create<PageStore>((set, get) => ({
   loadPages: async (workspaceId) => {
     set({ isLoading: true });
     try {
-      const pages = await pageService.getPages(workspaceId);
-      set({ pages, isLoading: false });
+      const [pages, trash] = await Promise.all([pageService.getPages(workspaceId), pageService.getTrash(workspaceId)]);
+      set({ pages: [...pages, ...trash], isLoading: false });
     } catch (error) {
       logError('pageStore.loadPages', error);
       set({ isLoading: false });
@@ -176,13 +176,8 @@ export const usePageStore = create<PageStore>((set, get) => ({
         onClick: async () => {
           // Revert soft delete in service and store
           try {
-            await pageService.restorePage(id);
-            set((state) => ({
-              pages: state.pages.map((p) =>
-                affectedIds.includes(p.id) ? { ...p, isArchived: false } : p
-              ),
-              selectedPageId: id,
-            }));
+            await get().restorePage(id);
+            set({ selectedPageId: id });
             useToastStore.getState().addToast({
               message: 'Page restored',
               type: 'success',
@@ -209,18 +204,11 @@ export const usePageStore = create<PageStore>((set, get) => ({
 
   restorePage: async (id) => {
     try {
-      await pageService.restorePage(id);
-      set((state) => ({
-        pages: state.pages.map((p) => {
-          const isDescendant = (candidate: Page): boolean => {
-            if (!candidate.parentId) return false;
-            if (candidate.parentId === id) return true;
-            const parent = state.pages.find((page) => page.id === candidate.parentId);
-            return parent ? isDescendant(parent) : false;
-          };
-          return p.id === id || isDescendant(p) ? { ...p, isArchived: false } : p;
-        }),
-      }));
+      const restored = await pageService.restorePage(id);
+      const [pages, trash] = await Promise.all([
+        pageService.getPages(restored.workspaceId), pageService.getTrash(restored.workspaceId),
+      ]);
+      set({ pages: [...pages, ...trash] });
       useToastStore.getState().addToast({
         message: 'Page restored',
         type: 'success',
@@ -231,6 +219,7 @@ export const usePageStore = create<PageStore>((set, get) => ({
         message: 'Failed to restore page',
         type: 'error',
       });
+      throw error;
     }
   },
 

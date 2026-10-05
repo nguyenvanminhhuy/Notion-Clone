@@ -80,6 +80,9 @@ public class ShareService : IShareService
         };
 
         _dbContext.PageShares.Add(share);
+        if (targetUser != null)
+            EventNotifications.Add(_dbContext, userId, targetUser.Id, NotificationType.Share,
+                "Page shared with you", "You have been granted access to a page.", $"/page/{pageId}");
         await _dbContext.SaveChangesAsync(ct);
 
         return new PageShareDto(
