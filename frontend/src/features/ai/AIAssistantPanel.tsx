@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAIStore } from '../../stores/aiStore';
 import {
   Sparkles,
@@ -22,6 +22,7 @@ import type { AIOptionType } from '../../types/ai';
 interface AIAssistantPanelProps {
   pageTitle?: string;
   pageContentText?: string;
+  pageId?: string | null;
 }
 
 const QUICK_PROMPTS: { label: string; action: AIOptionType; icon: React.ElementType }[] = [
@@ -32,7 +33,7 @@ const QUICK_PROMPTS: { label: string; action: AIOptionType; icon: React.ElementT
   { label: 'Explain context', action: 'explain', icon: HelpCircle },
 ];
 
-export function AIAssistantPanel({ pageTitle, pageContentText }: AIAssistantPanelProps) {
+export function AIAssistantPanel({ pageTitle, pageContentText, pageId }: AIAssistantPanelProps) {
   const {
     isPanelOpen,
     closePanel,
@@ -44,7 +45,15 @@ export function AIAssistantPanel({ pageTitle, pageContentText }: AIAssistantPane
     regenerateLastResponse,
     selectedTextContext,
     setSelectedTextContext,
+    setCurrentPageId,
   } = useAIStore();
+
+  // Sync current page ID into the store for AI context
+  useEffect(() => {
+    setCurrentPageId(pageId ?? null);
+    return () => setCurrentPageId(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageId]);
 
   const [inputPrompt, setInputPrompt] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);

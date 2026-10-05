@@ -1,11 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { FileText, Zap, Star, Clock, Plus, BookOpen } from 'lucide-react';
-import { MOCK_CURRENT_USER } from '../../mock/users';
-import { MOCK_PAGES, getRecentPages, getFavoritePages } from '../../mock/pages';
+import { useAuthStore } from '../../stores/authStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { usePageStore } from '../../stores/pageStore';
 import { EmptyWorkspace } from './EmptyWorkspace';
+import type { Page } from '../../types/page';
 
 function formatRelativeTime(dateStr: string | null): string {
   if (!dateStr) return '';
@@ -16,6 +17,20 @@ function formatRelativeTime(dateStr: string | null): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   return `${days}d ago`;
+}
+
+function getRecentPages(pages: Page[], workspaceId: string | null): Page[] {
+  return pages
+    .filter((p) => (!workspaceId || p.workspaceId === workspaceId) && !p.isArchived)
+    .sort((a, b) => new Date(b.lastOpenedAt ?? b.updatedAt).getTime() - new Date(a.lastOpenedAt ?? a.updatedAt).getTime())
+    .slice(0, 5);
+}
+
+function getFavoritePages(pages: Page[], workspaceId: string | null): Page[] {
+  return pages
+    .filter((p) => (!workspaceId || p.workspaceId === workspaceId) && !p.isArchived && p.isFavorite)
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 5);
 }
 
 const QUICK_ACTIONS = [
@@ -46,8 +61,10 @@ const QUICK_ACTIONS = [
 ];
 
 export function HomeDashboard() {
+  const router = useRouter();
+  const { user } = useAuthStore();
   const { currentWorkspaceId } = useWorkspaceStore();
-  const { pages } = usePageStore();
+  const { pages, createPage } = usePageStore();
 
   const workspacePages = pages.filter((p) => !p.isArchived);
   if (workspacePages.length === 0) {
@@ -64,7 +81,14 @@ export function HomeDashboard() {
     return 'Good evening';
   })();
 
-  const firstName = MOCK_CURRENT_USER.name.split(' ')[0];
+  const firstName = user?.name ? user.name.split(' ')[0] : 'there';
+
+  const handleQuickAction = async (id: string) => {
+    if (id === 'new-page' && currentWorkspaceId) {
+      const page = await createPage(currentWorkspaceId, null);
+      if (page) router.push(`/page/${page.id}`);
+    }
+  };
 
   return (
     <div className="home-page">
@@ -89,6 +113,7 @@ export function HomeDashboard() {
                 key={action.id}
                 className="quick-action-card"
                 aria-label={action.label}
+                onClick={() => handleQuickAction(action.id)}
               >
                 <span className="quick-action-icon">
                   <Icon size={18} />
@@ -112,7 +137,15 @@ export function HomeDashboard() {
           </h2>
           <div className="home-recent-list">
             {recentPages.map((page) => (
-              <div key={page.id} className="recent-item" role="link" tabIndex={0}>
+              <div
+                key={page.id}
+                className="recent-item"
+                role="link"
+                tabIndex={0}
+                style={{ cursor: 'pointer' }}
+                onClick={() => router.push(`/page/${page.id}`)}
+                onKeyDown={(e) => e.key === 'Enter' && router.push(`/page/${page.id}`)}
+              >
                 <span className="recent-item-icon">{page.icon ?? '📄'}</span>
                 <span className="recent-item-title">{page.title}</span>
                 <span className="recent-item-time">
@@ -133,7 +166,15 @@ export function HomeDashboard() {
           </h2>
           <div className="home-recent-list">
             {favoritePages.map((page) => (
-              <div key={page.id} className="recent-item" role="link" tabIndex={0}>
+              <div
+                key={page.id}
+                className="recent-item"
+                role="link"
+                tabIndex={0}
+                style={{ cursor: 'pointer' }}
+                onClick={() => router.push(`/page/${page.id}`)}
+                onKeyDown={(e) => e.key === 'Enter' && router.push(`/page/${page.id}`)}
+              >
                 <span className="recent-item-icon">{page.icon ?? '📄'}</span>
                 <span className="recent-item-title">{page.title}</span>
                 <span className="recent-item-time">

@@ -23,6 +23,8 @@ import {
 
 import type { Page } from '../../types/page';
 import { pageService } from '../../services/pageService';
+import { classifyError, logError } from '../../lib/errorHandler';
+import { InlineError } from '../../components/shared/InlineError';
 
 // Dynamically import Editor to avoid SSR issues with ProseMirror DOM APIs
 const Editor = lazy(() =>
@@ -42,6 +44,7 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
   const { isPanelOpen: isAIPanelOpen, togglePanel: toggleAIPanel } = useAIStore();
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<ReturnType<typeof classifyError> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -52,10 +55,11 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
     selectPage(pageId);
   }, [pageId, selectPage]);
 
-  // Fetch current page from mock service
+  // Fetch current page from service
   useEffect(() => {
     setIsLoading(true);
     setCurrentPage(null);
+    setLoadError(null);
     pageService
       .getPage(pageId)
       .then((page) => {
@@ -63,7 +67,8 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        logError('PageView.loadPage', err);
+        setLoadError(classifyError(err));
         setIsLoading(false);
       });
   }, [pageId]);
@@ -90,6 +95,29 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading) {
     return <PageSkeleton />;
+  }
+
+  // ── Load error ─────────────────────────────────────────────────────────────
+  if (loadError) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '24px' }}>
+        <InlineError
+          error={loadError}
+          onRetry={loadError.retryable ? () => {
+            setIsLoading(true);
+            setLoadError(null);
+            pageService.getPage(pageId)
+              .then((page) => { setCurrentPage(page); setIsLoading(false); })
+              .catch((err) => { logError('PageView.retry', err); setLoadError(classifyError(err)); setIsLoading(false); });
+          } : undefined}
+        />
+        {onBackToDashboard && (
+          <button className="btn-secondary" onClick={onBackToDashboard} style={{ marginTop: '16px' }}>
+            Go back
+          </button>
+        )}
+      </div>
+    );
   }
 
   // ── Not found / archived ───────────────────────────────────────────────────
@@ -209,6 +237,7 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
               initialContent={currentPage.content}
               onSave={handleSaveContent}
               onSavingStateChange={setIsSaving}
+              pageId={currentPage.id}
             />
           </Suspense>
         </div>
@@ -221,7 +250,11 @@ export function PageView({ pageId, onBackToDashboard }: PageViewProps) {
       )}
 
       {/* ── AI Assistant Panel ───────────────────────────────────────────── */}
-      <AIAssistantPanel pageTitle={currentPage.title} pageContentText={currentPage.content} />
+      <AIAssistantPanel
+        pageTitle={currentPage.title}
+        pageContentText={currentPage.content}
+        pageId={currentPage.id}
+      />
 
       {/* ── Page History Modal ───────────────────────────────────────────── */}
       <PageHistoryModal

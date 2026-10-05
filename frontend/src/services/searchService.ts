@@ -53,9 +53,49 @@ function mapPage(dto: SearchResultDto['page']): Page {
   };
 }
 
+function buildBreadcrumbs(page: Page, allPages: Page[]): string[] {
+  const breadcrumbs: string[] = [];
+  let currentParentId = page.parentId;
+  while (currentParentId) {
+    const parent = allPages.find((p) => p.id === currentParentId);
+    if (!parent) break;
+    breadcrumbs.unshift(parent.title || 'Untitled');
+    currentParentId = parent.parentId;
+  }
+  return breadcrumbs;
+}
+
+function searchLocalPages(query: string, workspaceId: string, pages: Page[]): SearchResult[] {
+  const q = query.toLowerCase();
+  const workspacePages = pages.filter((p) => p.workspaceId === workspaceId && !p.isArchived);
+  const results: SearchResult[] = [];
+
+  for (const page of workspacePages) {
+    const titleMatch = page.title.toLowerCase().includes(q);
+    const contentMatch = page.content.toLowerCase().includes(q);
+
+    if (titleMatch || contentMatch) {
+      results.push({
+        page,
+        breadcrumbs: buildBreadcrumbs(page, pages),
+        matchType: titleMatch ? 'title' : 'content',
+        snippet: contentMatch ? page.content.slice(0, 100) : undefined,
+      });
+    }
+  }
+
+  return results;
+}
+
 export const searchService = {
-  async searchPages(query: string, workspaceId: string, _allPages?: Page[]): Promise<SearchResult[]> {
+  async searchPages(query: string, workspaceId: string, allPages?: Page[]): Promise<SearchResult[]> {
     if (!query.trim() || !workspaceId) return [];
+
+    // If local pages provided explicitly (e.g. in offline mode or unit tests), search them
+    if (allPages && allPages.length > 0) {
+      return searchLocalPages(query.trim(), workspaceId, allPages);
+    }
+
     try {
       const results = await httpClient.get<SearchResultDto[]>('/api/search', {
         params: { q: query.trim(), workspaceId },
@@ -67,6 +107,9 @@ export const searchService = {
         snippet: r.snippet,
       }));
     } catch (error) {
+      if (allPages) {
+        return searchLocalPages(query.trim(), workspaceId, allPages);
+      }
       console.error('Failed to search pages:', error);
       return [];
     }

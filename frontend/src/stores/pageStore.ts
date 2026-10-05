@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { pageService } from '../services/pageService';
 import type { Page } from '../types/page';
 import { useToastStore } from './toastStore';
+import { logError, getErrorMessage } from '../lib/errorHandler';
 
 interface PageStore {
   pages: Page[];
@@ -32,15 +33,16 @@ export const usePageStore = create<PageStore>((set, get) => ({
       const pages = await pageService.getPages(workspaceId);
       set({ pages, isLoading: false });
     } catch (error) {
-      console.error('Failed to load pages:', error);
+      logError('pageStore.loadPages', error);
       set({ isLoading: false });
+      useToastStore.getState().addToast({ message: getErrorMessage(error), type: 'error', duration: 5000 });
     }
   },
 
   selectPage: (id) => {
     set({ selectedPageId: id });
     if (id) {
-      pageService.recordPageOpen(id).catch(console.error);
+      pageService.recordPageOpen(id).catch((err) => logError('pageStore.recordPageOpen', err));
       // Update lastOpenedAt locally
       set((state) => ({
         pages: state.pages.map((p) =>
@@ -117,10 +119,10 @@ export const usePageStore = create<PageStore>((set, get) => ({
       // Revert on failure
       set({ pages: previousPages });
       useToastStore.getState().addToast({
-        message: 'Failed to update page',
+        message: getErrorMessage(error),
         type: 'error',
       });
-      console.error(error);
+      logError('pageStore.updatePage', error);
     }
   },
 
@@ -178,10 +180,10 @@ export const usePageStore = create<PageStore>((set, get) => ({
       // Revert on failure
       set({ pages: previousPages });
       useToastStore.getState().addToast({
-        message: 'Failed to delete page',
+        message: getErrorMessage(error),
         type: 'error',
       });
-      console.error(error);
+      logError('pageStore.deletePage', error);
     }
   },
 

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { workspaceService } from '../services/workspaceService';
 import type { Workspace } from '../types/workspace';
 import { useToastStore } from './toastStore';
+import { logError, getErrorMessage } from '../lib/errorHandler';
 
 interface WorkspaceStore {
   currentWorkspaceId: string;
@@ -40,8 +41,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Failed to load workspaces:', error);
+          logError('workspaceStore.loadWorkspaces', error);
           set({ isLoading: false });
+          // Only toast if it's a real error (not just unauthenticated on first load)
+          const msg = getErrorMessage(error);
+          if (!msg.includes('session') && !msg.includes('sign in')) {
+            useToastStore.getState().addToast({ message: msg, type: 'error', duration: 5000 });
+          }
         }
       },
 

@@ -12,6 +12,7 @@ interface EditorProps {
   onSavingStateChange?: (isSaving: boolean) => void;
   placeholder?: string;
   editable?: boolean;
+  pageId?: string | null;
 }
 
 const AUTOSAVE_DELAY_MS = 1000;
@@ -21,6 +22,7 @@ export function Editor({
   onSave,
   onSavingStateChange,
   editable = true,
+  pageId,
 }: EditorProps) {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -87,7 +89,7 @@ export function Editor({
       {/* Editor content area — also anchors slash menu */}
       <div className="editor-scroll-area" style={{ position: 'relative' }}>
         {/* Slash command floating menu */}
-        <FloatingToolbar editor={editor} />
+        <FloatingToolbar editor={editor} pageId={pageId ?? null} />
 
         <EditorContent
           editor={editor}

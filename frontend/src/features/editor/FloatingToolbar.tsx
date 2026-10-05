@@ -27,7 +27,7 @@ interface SlashCommand {
   description: string;
   icon: React.ReactNode;
   keywords: string[];
-  action: (editor: Editor) => void;
+  action: (editor: Editor, pageId?: string | null) => void;
 }
 
 const SLASH_COMMANDS: SlashCommand[] = [
@@ -126,10 +126,11 @@ const SLASH_COMMANDS: SlashCommand[] = [
     description: 'Insert an image from URL',
     icon: <ImageIcon size={16} />,
     keywords: ['image', 'img', 'photo', 'picture'],
-    action: (editor) => {
+    // pageId is injected at call-time via a closure in FloatingToolbar
+    action: (editor, pageId?: string | null) => {
       useUIStore.getState().openUploadDialog((url: string) => {
         editor.chain().focus().setImage({ src: url }).run();
-      });
+      }, pageId);
     },
   },
   {
@@ -158,9 +159,10 @@ interface SlashMenuState {
 
 interface FloatingToolbarProps {
   editor: Editor;
+  pageId: string | null;
 }
 
-export function FloatingToolbar({ editor }: FloatingToolbarProps) {
+export function FloatingToolbar({ editor, pageId }: FloatingToolbarProps) {
   const [menu, setMenu] = useState<SlashMenuState>({
     isOpen: false,
     query: '',
@@ -293,10 +295,10 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
       const { startPos, query } = menu;
       const deleteFrom = startPos - query.length - 1; // -1 for the slash
       editor.chain().focus().deleteRange({ from: deleteFrom, to: startPos }).run();
-      command.action(editor);
+      command.action(editor, pageId);
       setMenu((prev) => ({ ...prev, isOpen: false, query: '' }));
     },
-    [editor, menu]
+    [editor, menu, pageId]
   );
 
   if (!menu.isOpen || filteredCommands.length === 0) return null;
